@@ -20,25 +20,68 @@ export default function RegisterScreen() {
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async () => {
-    if (!name || !email || !password) {
-      show('Please fill all fields', 'error');
-      return;
-    }
-    if (!agree) {
-      show('Please accept terms & conditions', 'error');
-      return;
-    }
-    setLoading(true);
-    try {
-      await register(name, email, password);
-      router.push('/(auth)/otp');
-    } catch {
-      show('Registration failed', 'error');
-    }
-    setLoading(false);
-  };
+  // const handleRegister = async () => {
+  //   if (!name || !email || !password) {
+  //     show('Please fill all fields', 'error');
+  //     return;
+  //   }
+  //   if (!agree) {
+  //     show('Please accept terms & conditions', 'error');
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     await register(name, email, password);
+  //     router.push('/(auth)/otp');
+  //   } catch {
+  //     show('Registration failed', 'error');
+  //   }
+  //   setLoading(false);
+  // };
+ 
+  // In RegisterScreen.tsx, update the handleRegister function:
 
+// const handleRegister = async () => {
+//   if (!name || !email || !password) {
+//     show('Please fill all fields', 'error');
+//     return;
+//   }
+//   if (!agree) {
+//     show('Please accept terms & conditions', 'error');
+//     return;
+//   }
+//   setLoading(true);
+//   try {
+//     await register(name, email, password, phone);
+//     show('Registration successful! Please verify your email.');
+//     router.push('/(auth)/otp');
+//   } catch (error: any) {
+//     show(error.message || 'Registration failed', 'error');
+//   }
+//   setLoading(false);
+// };
+
+
+const handleRegister = async () => {
+  if (!name || !email || !password) {
+    show('Please fill all fields', 'error');
+    return;
+  }
+  if (!agree) {
+    show('Please accept terms & conditions', 'error');
+    return;
+  }
+  setLoading(true);
+  try {
+    await register(name, email, password, phone);
+    show('Registration successful! Please verify your email.');
+    // Navigate to OTP screen
+    router.push('/(auth)/otp');
+  } catch (error: any) {
+    show(error.message || 'Registration failed', 'error');
+  }
+  setLoading(false);
+};
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

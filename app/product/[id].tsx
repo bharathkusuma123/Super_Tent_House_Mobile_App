@@ -1,3 +1,10 @@
+
+
+
+
+
+
+// app/product/[id].tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Share } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -93,11 +100,42 @@ export default function ProductDetailScreen() {
   }
 
   const isWishlisted = has(product.id);
+  
+  // Safely get reviews array
+  const reviews = Array.isArray(product.reviews) ? product.reviews : [];
+  
   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
-    const count = product.reviews.filter(r => Math.round(r.rating) === stars).length;
-    const pct = product.reviews.length > 0 ? (count / product.reviews.length) * 100 : 0;
+    const count = reviews.filter(r => Math.round(r.rating) === stars).length;
+    const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
     return { stars, count, pct };
   });
+
+  // Safely get features array
+  const features = Array.isArray(product.features) ? product.features : [];
+  
+  // Safely get colors array
+  const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
+  
+  // Safely get specifications - handle both array and object
+  const getSpecsArray = () => {
+    const specs = product.specifications;
+    if (!specs) return [];
+    
+    if (Array.isArray(specs)) {
+      return specs;
+    }
+    
+    if (typeof specs === 'object') {
+      return Object.entries(specs).map(([key, value]) => ({
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        value: String(value)
+      }));
+    }
+    
+    return [];
+  };
+  
+  const specifications = getSpecsArray();
 
   return (
     <View style={styles.container}>
@@ -166,20 +204,22 @@ export default function ProductDetailScreen() {
           </View>
 
           {/* Colors */}
-          <View style={styles.colorSection}>
-            <Text style={styles.colorLabel}>Available Colors</Text>
-            <View style={styles.colorRow}>
-              {product.colors.map((c, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[styles.colorDot, { backgroundColor: c }, selectedColor === i && styles.colorDotActive]}
-                  onPress={() => setSelectedColor(i)}
-                >
-                  {selectedColor === i && <Check color={c === '#FFFFFF' ? COLORS.neutral[900] : COLORS.white} size={16} />}
-                </TouchableOpacity>
-              ))}
+          {colors.length > 0 && (
+            <View style={styles.colorSection}>
+              <Text style={styles.colorLabel}>Available Colors</Text>
+              <View style={styles.colorRow}>
+                {colors.map((c, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.colorDot, { backgroundColor: c }, selectedColor === i && styles.colorDotActive]}
+                    onPress={() => setSelectedColor(i)}
+                  >
+                    {selectedColor === i && <Check color={c === '#FFFFFF' ? COLORS.neutral[900] : COLORS.white} size={16} />}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Quantity */}
           <View style={styles.qtySection}>
@@ -217,24 +257,32 @@ export default function ProductDetailScreen() {
           {activeTab === 'description' && (
             <View style={styles.tabContent}>
               <Text style={styles.descriptionText}>{product.description}</Text>
-              <Text style={styles.featuresTitle}>Key Features</Text>
-              {product.features.map((f, i) => (
-                <View key={i} style={styles.featureRow}>
-                  <View style={styles.featureDot} />
-                  <Text style={styles.featureText}>{f}</Text>
-                </View>
-              ))}
+              {features.length > 0 && (
+                <>
+                  <Text style={styles.featuresTitle}>Key Features</Text>
+                  {features.map((f, i) => (
+                    <View key={i} style={styles.featureRow}>
+                      <View style={styles.featureDot} />
+                      <Text style={styles.featureText}>{f}</Text>
+                    </View>
+                  ))}
+                </>
+              )}
             </View>
           )}
 
           {activeTab === 'specs' && (
             <View style={styles.tabContent}>
-              {product.specifications.map((s, i) => (
-                <View key={i} style={styles.specRow}>
-                  <Text style={styles.specLabel}>{s.label}</Text>
-                  <Text style={styles.specValue}>{s.value}</Text>
-                </View>
-              ))}
+              {specifications.length > 0 ? (
+                specifications.map((s, i) => (
+                  <View key={i} style={styles.specRow}>
+                    <Text style={styles.specLabel}>{s.label}</Text>
+                    <Text style={styles.specValue}>{s.value}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noDataText}>No specifications available</Text>
+              )}
             </View>
           )}
 
@@ -260,21 +308,25 @@ export default function ProductDetailScreen() {
                   ))}
                 </View>
               </View>
-              {product.reviews.map((review) => (
-                <View key={review.id} style={styles.reviewCard}>
-                  <Image source={{ uri: review.userAvatar }} style={styles.reviewAvatar} />
-                  <View style={styles.reviewBody}>
-                    <View style={styles.reviewHeader}>
-                      <Text style={styles.reviewName}>{review.userName}</Text>
-                      <View style={styles.reviewStars}>
-                        {[1,2,3,4,5].map(s => <Star key={s} size={11} color={COLORS.gold[400]} fill={s <= review.rating ? COLORS.gold[400] : 'transparent'} />)}
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <View key={review.id} style={styles.reviewCard}>
+                    <Image source={{ uri: review.userAvatar }} style={styles.reviewAvatar} />
+                    <View style={styles.reviewBody}>
+                      <View style={styles.reviewHeader}>
+                        <Text style={styles.reviewName}>{review.userName}</Text>
+                        <View style={styles.reviewStars}>
+                          {[1,2,3,4,5].map(s => <Star key={s} size={11} color={COLORS.gold[400]} fill={s <= review.rating ? COLORS.gold[400] : 'transparent'} />)}
+                        </View>
                       </View>
+                      <Text style={styles.reviewComment}>{review.comment}</Text>
+                      <Text style={styles.reviewDate}>{review.date}</Text>
                     </View>
-                    <Text style={styles.reviewComment}>{review.comment}</Text>
-                    <Text style={styles.reviewDate}>{review.date}</Text>
                   </View>
-                </View>
-              ))}
+                ))
+              ) : (
+                <Text style={styles.noDataText}>No reviews yet</Text>
+              )}
             </View>
           )}
 
@@ -395,6 +447,7 @@ const styles = StyleSheet.create({
   specRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: SPACING.sm, borderBottomWidth: 1, borderBottomColor: COLORS.neutral[100] },
   specLabel: { fontSize: 14, fontFamily: 'Inter-Regular', color: COLORS.neutral[500] },
   specValue: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[900] },
+  noDataText: { fontSize: 14, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], textAlign: 'center', paddingVertical: SPACING.lg },
   ratingSummary: { flexDirection: 'row', gap: SPACING.lg, marginBottom: SPACING.lg, padding: SPACING.md, backgroundColor: COLORS.neutral[50], borderRadius: RADIUS.lg },
   ratingBig: { alignItems: 'center' },
   ratingBigValue: { fontSize: 36, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },

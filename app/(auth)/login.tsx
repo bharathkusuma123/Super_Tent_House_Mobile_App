@@ -1,3 +1,5 @@
+
+
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -12,8 +14,10 @@ export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuth();
   const { show } = useToast();
-  const [email, setEmail] = useState('arjun@example.com');
-  const [password, setPassword] = useState('password123');
+  
+  // ✅ REMOVED default credentials - now empty fields
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -28,8 +32,8 @@ export default function LoginScreen() {
       await login(email, password);
       show('Welcome back!');
       router.replace('/(tabs)');
-    } catch {
-      show('Login failed', 'error');
+    } catch (error: any) {
+      show(error.message || 'Login failed', 'error');
     }
     setLoading(false);
   };
@@ -62,6 +66,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </Animated.View>
@@ -77,6 +82,7 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPass}
+                autoCorrect={false}
               />
               <TouchableOpacity onPress={() => setShowPass(!showPass)} style={styles.eyeBtn}>
                 {showPass ? <EyeOff color={COLORS.neutral[400]} size={20} /> : <Eye color={COLORS.neutral[400]} size={20} />}
