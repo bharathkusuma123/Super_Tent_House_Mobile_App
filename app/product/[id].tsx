@@ -1,9 +1,5 @@
 
 
-
-
-
-
 // app/product/[id].tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Share } from 'react-native';

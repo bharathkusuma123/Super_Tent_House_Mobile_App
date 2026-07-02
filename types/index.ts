@@ -311,3 +311,14 @@ export type Coupon = {
   description: string;
 };
 
+// types/index.ts
+export type HeroBanner = {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  cta: string;
+  ctaLink: string;
+  displayOrder: number;
+  isActive: boolean;
+};

@@ -1,7 +1,10 @@
+
+
+// app/(tabs)/index.tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
-  Dimensions, RefreshControl, FlatList, NativeScrollEvent, NativeSyntheticEvent,
+  Dimensions, RefreshControl, FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
@@ -15,7 +18,7 @@ import {
 } from 'lucide-react-native';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { mockApi } from '@/services/api';
-import { Category, Product } from '@/types';
+import { Category, Product, HeroBanner } from '@/types';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { ProductCard } from '@/components/ProductCard';
 import { Skeleton, ProductCardSkeleton } from '@/components/ui/Skeleton';
@@ -59,7 +62,6 @@ function BestSellerCard({ product, rank, index }: { product: Product; rank: numb
         onPress={() => router.push(`/product/${product.id}`)}
         activeOpacity={0.88}
       >
-        {/* Rank ribbon */}
         <View style={[bs.rankRibbon, { backgroundColor: RANK_COLORS[rank] ?? COLORS.neutral[400] }]}>
           <TrendingUp color={rank === 0 ? COLORS.neutral[900] : COLORS.white} size={11} />
           <Text style={[bs.rankText, rank !== 0 && { color: COLORS.white }]}>
@@ -67,7 +69,6 @@ function BestSellerCard({ product, rank, index }: { product: Product; rank: numb
           </Text>
         </View>
 
-        {/* Image */}
         <View style={bs.imageWrap}>
           <Image source={{ uri: product.images[0] }} style={bs.image} />
           <TouchableOpacity
@@ -82,12 +83,10 @@ function BestSellerCard({ product, rank, index }: { product: Product; rank: numb
           </TouchableOpacity>
         </View>
 
-        {/* Body */}
         <View style={bs.body}>
           <Text style={bs.category}>{product.categoryName}</Text>
           <Text style={bs.name} numberOfLines={2}>{product.name}</Text>
 
-          {/* Rating row */}
           <View style={bs.ratingRow}>
             <View style={bs.stars}>
               {[1, 2, 3, 4, 5].map(s => (
@@ -102,7 +101,6 @@ function BestSellerCard({ product, rank, index }: { product: Product; rank: numb
             <Text style={bs.ratingCount}>({product.reviewCount})</Text>
           </View>
 
-          {/* Sales indicator bar */}
           <View style={bs.salesWrap}>
             <Text style={bs.salesLabel}>Sales</Text>
             <View style={bs.salesTrack}>
@@ -118,7 +116,6 @@ function BestSellerCard({ product, rank, index }: { product: Product; rank: numb
             </View>
           </View>
 
-          {/* Price + CTA */}
           <View style={bs.footer}>
             <View>
               <Text style={bs.price}>₹{product.price.toLocaleString('en-IN')}</Text>
@@ -217,7 +214,7 @@ export default function HomeScreen() {
   const [trending, setTrending] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
-  const [banners, setBanners] = useState<any[]>([]);
+  const [banners, setBanners] = useState<HeroBanner[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [whyChoose, setWhyChoose] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -239,7 +236,7 @@ export default function HomeScreen() {
     setTrending(trend);
     setBestSellers(best);
     setNewArrivals(newArr);
-    setBanners(bnr);
+    setBanners(bnr || []);
     setTestimonials(tst);
     setWhyChoose(why);
     setLoading(false);
@@ -255,7 +252,7 @@ export default function HomeScreen() {
         bannerRef.current?.scrollToIndex({ index: next, animated: true });
         return next;
       });
-    }, 3500);
+    }, 4000);
     return () => clearInterval(timer);
   }, [banners.length]);
 
@@ -321,14 +318,19 @@ export default function HomeScreen() {
           <View style={{ paddingHorizontal: SPACING.md, marginTop: SPACING.md }}>
             <Skeleton width="100%" height={200} radius={RADIUS.xxl} />
           </View>
-        ) : (
+        ) : banners.length > 0 ? (
           <View style={styles.bannerWrap}>
             <FlatList
               ref={bannerRef}
               data={banners}
-              horizontal pagingEnabled
+              horizontal
+              pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onScroll={e => setBannerIndex(Math.round(e.nativeEvent.contentOffset.x / (width - SPACING.md * 2)))}
+              onScroll={e => {
+                const offset = e.nativeEvent.contentOffset.x;
+                const index = Math.round(offset / (width - SPACING.md * 2));
+                setBannerIndex(index);
+              }}
               scrollEventThrottle={16}
               keyExtractor={item => item.id}
               renderItem={({ item }) => (
@@ -338,7 +340,16 @@ export default function HomeScreen() {
                   <View style={styles.bannerContent}>
                     <Text style={styles.bannerTitle}>{item.title}</Text>
                     <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
-                    <TouchableOpacity style={styles.bannerCta} onPress={() => router.push('/package-list')}>
+                    <TouchableOpacity 
+                      style={styles.bannerCta} 
+                      onPress={() => {
+                        if (item.ctaLink && item.ctaLink !== '/') {
+                          router.push(item.ctaLink);
+                        } else {
+                          router.push('/package-list');
+                        }
+                      }}
+                    >
                       <Text style={styles.bannerCtaText}>{item.cta}</Text>
                       <ChevronRight color={COLORS.neutral[900]} size={16} />
                     </TouchableOpacity>
@@ -352,7 +363,7 @@ export default function HomeScreen() {
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
         {/* Shop by Category */}
         <View style={styles.section}>
@@ -404,9 +415,8 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* ── BEST SELLERS ─────────────────────────────────────── */}
+        {/* Best Sellers */}
         <View style={styles.section}>
-          {/* Section header with crown accent */}
           <View style={styles.bsHeaderWrap}>
             <View style={styles.bsHeaderLeft}>
               <View style={styles.bsCrown}>
@@ -551,7 +561,6 @@ function PackageBanner() {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.offWhite },
   stickyHeader: { position: 'absolute', top: 0, left: 0, right: 0, height: 130, backgroundColor: COLORS.white, zIndex: 1 },
@@ -584,7 +593,6 @@ const styles = StyleSheet.create({
   categoryCircle: { width: 72, height: 72, borderRadius: 36, overflow: 'hidden', borderWidth: 2, borderColor: COLORS.gold[200], ...SHADOWS.small },
   categoryImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   categoryName: { fontSize: 11, fontFamily: 'Inter-Medium', color: COLORS.neutral[700], marginTop: 6, textAlign: 'center', lineHeight: 14 },
-  // Best sellers header
   bsHeaderWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, marginBottom: SPACING.md },
   bsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bsCrown: { width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.gold[50], borderWidth: 1.5, borderColor: COLORS.gold[200], justifyContent: 'center', alignItems: 'center' },
@@ -592,8 +600,6 @@ const styles = StyleSheet.create({
   bsSubtitle: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 1 },
   bsSeeAll: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   bsSeeAllText: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.gold[500] },
-  // grid (kept for potential use)
-  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: SPACING.md, gap: SPACING.md },
   whyGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: SPACING.md, gap: SPACING.md },
   whyCard: { width: (width - SPACING.md * 3) / 2, backgroundColor: COLORS.white, borderRadius: RADIUS.xl, padding: SPACING.md, ...SHADOWS.small },
   whyIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.gold[50], justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.sm },

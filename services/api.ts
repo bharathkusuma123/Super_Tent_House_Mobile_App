@@ -1,5 +1,9 @@
 
 
+
+
+
+
 // services/api.ts
 import axios from 'axios';
 // Import mock data with different names to avoid conflicts
@@ -751,24 +755,36 @@ async getAddOns(): Promise<AddOn[]> {
   },
 
   // ─── HERO BANNERS ─────────────────────────────────────────────
-  async getHeroBanners() {
-    if (USE_REAL_API) {
-      try {
-        const response = await apiClient.get('/hero-banners');
-        const data = response.data.data || response.data;
-        if (Array.isArray(data)) {
-          return data;
-        }
-        return [];
-      } catch (error) {
-        console.error('Failed to fetch hero banners from API, falling back to mock data:', error);
-        await delay(200);
-        return mockHeroBanners;
+// services/api.ts - Update the getHeroBanners method
+
+// ─── HERO BANNERS ─────────────────────────────────────────────
+async getHeroBanners() {
+  if (USE_REAL_API) {
+    try {
+      const response = await apiClient.get('/hero-banners');
+      const data = response.data;
+      if (Array.isArray(data)) {
+        return data.map((item: any) => ({
+          id: item.id?.toString() || '',
+          title: item.title || '',
+          subtitle: item.subtitle || '',
+          image: item.image || item.image_url || 'https://via.placeholder.com/800x400',
+          cta: item.cta || item.cta_text || 'Learn More',
+          ctaLink: item.cta_link || '/',
+          displayOrder: Number(item.display_order) || 0,
+          isActive: item.is_active !== undefined ? Boolean(item.is_active) : true,
+        }));
       }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch hero banners from API, falling back to mock data:', error);
+      await delay(200);
+      return mockHeroBanners;
     }
-    await delay(200);
-    return mockHeroBanners;
-  },
+  }
+  await delay(200);
+  return mockHeroBanners;
+},
 
   // ─── AUTHENTICATION ────────────────────────────────────────────
   async login(email: string, password: string) {
