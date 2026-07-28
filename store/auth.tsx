@@ -1,4 +1,268 @@
+// // store/auth.tsx
+// import { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
+// import { User } from '@/types';
+// import { API_BASE_URL } from '@/constants/api';
 
+// type AuthState = {
+//   user: User | null;
+//   token: string | null;
+//   isLoading: boolean;
+//   isAuthenticated: boolean;
+// };
+
+// type AuthAction =
+//   | { type: 'SET_LOADING'; payload: boolean }
+//   | { type: 'SET_AUTH'; payload: { user: User; token: string } }
+//   | { type: 'LOGOUT' }
+//   | { type: 'UPDATE_USER'; payload: Partial<User> };
+
+// const initialState: AuthState = {
+//   user: null,
+//   token: null,
+//   isLoading: true,
+//   isAuthenticated: false,
+// };
+
+// function authReducer(state: AuthState, action: AuthAction): AuthState {
+//   switch (action.type) {
+//     case 'SET_LOADING':
+//       return { ...state, isLoading: action.payload };
+//     case 'SET_AUTH':
+//       return { user: action.payload.user, token: action.payload.token, isLoading: false, isAuthenticated: true };
+//     case 'LOGOUT':
+//       return { user: null, token: null, isLoading: false, isAuthenticated: false };
+//     case 'UPDATE_USER':
+//       return { ...state, user: state.user ? { ...state.user, ...action.payload } : null };
+//     default:
+//       return state;
+//   }
+// }
+
+// type AuthContextType = {
+//   state: AuthState;
+//   login: (email: string, password: string) => Promise<void>;
+//   register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+//   logout: () => Promise<void>;
+//   updateUser: (data: Partial<User>) => void;
+// };
+
+// const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// // Storage abstraction
+// const storage = {
+//   async getItem(key: string): Promise<string | null> {
+//     try {
+//       if (typeof window !== 'undefined' && window.localStorage) {
+//         return window.localStorage.getItem(key);
+//       }
+//     } catch {}
+//     return null;
+//   },
+//   async setItem(key: string, value: string): Promise<void> {
+//     try {
+//       if (typeof window !== 'undefined' && window.localStorage) {
+//         window.localStorage.setItem(key, value);
+//       }
+//     } catch {}
+//   },
+//   async removeItem(key: string): Promise<void> {
+//     try {
+//       if (typeof window !== 'undefined' && window.localStorage) {
+//         window.localStorage.removeItem(key);
+//       }
+//     } catch {}
+//   },
+// };
+
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [state, dispatch] = useReducer(authReducer, initialState);
+
+//   useEffect(() => {
+//     (async () => {
+//       try {
+//         const token = await storage.getItem('auth_token');
+//         const userStr = await storage.getItem('auth_user');
+//         if (token && userStr) {
+//           dispatch({ type: 'SET_AUTH', payload: { user: JSON.parse(userStr), token } });
+//         } else {
+//           dispatch({ type: 'SET_LOADING', payload: false });
+//         }
+//       } catch {
+//         dispatch({ type: 'SET_LOADING', payload: false });
+//       }
+//     })();
+//   }, []);
+
+//   const login = useCallback(async (email: string, password: string) => {
+//     try {
+//       const url = `${API_BASE_URL}/login`;
+//       console.log('🔍 Login URL:', url);
+//       console.log('📦 Login Request:', { email, password: '***' });
+      
+//       const response = await fetch(url, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json',
+//         },
+//         body: JSON.stringify({ email, password }),
+//       });
+
+//       console.log('📡 Login Response Status:', response.status);
+//       console.log('📡 Content-Type:', response.headers.get('content-type'));
+
+//       // Get raw response
+//       const responseText = await response.text();
+//       console.log('📄 Raw Login Response:', responseText);
+
+//       // Try to parse as JSON
+//       let data;
+//       try {
+//         data = JSON.parse(responseText);
+//       } catch (e) {
+//         console.error('❌ Failed to parse login JSON');
+//         throw new Error(`Server returned invalid response. Status: ${response.status}. Response: ${responseText.substring(0, 100)}`);
+//       }
+
+//       if (!response.ok) {
+//         throw new Error(data.message || 'Login failed');
+//       }
+
+//       // Store token and user data
+//       await storage.setItem('auth_token', data.token);
+//       await storage.setItem('auth_user', JSON.stringify(data.user));
+      
+//       // Map the user object from backend to match your frontend User type
+//       const user: User = {
+//         id: data.user.id.toString(),
+//         name: data.user.name,
+//         email: data.user.email,
+//         phone: data.user.phone || '',
+//         avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//         isPremium: false,
+//       };
+
+//       dispatch({ type: 'SET_AUTH', payload: { user, token: data.token } });
+//       console.log('✅ Login successful for:', user.email);
+//     } catch (error) {
+//       console.error('❌ Login error:', error);
+//       throw error;
+//     }
+//   }, []);
+
+//   const register = useCallback(async (name: string, email: string, password: string, phone?: string) => {
+//     try {
+//       const url = `${API_BASE_URL}/register`;
+//       console.log('🔍 Registration URL:', url);
+//       console.log('📦 Registration Request:', { name, email, phone, password: '***' });
+      
+//       const response = await fetch(url, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json',
+//         },
+//         body: JSON.stringify({ name, email, phone, password }),
+//       });
+
+//       console.log('📡 Registration Response Status:', response.status);
+//       console.log('📡 Content-Type:', response.headers.get('content-type'));
+
+//       // Get raw response
+//       const responseText = await response.text();
+//       console.log('📄 Raw Registration Response:', responseText);
+
+//       // Try to parse as JSON
+//       let data;
+//       try {
+//         data = JSON.parse(responseText);
+//       } catch (e) {
+//         console.error('❌ Failed to parse registration JSON');
+//         throw new Error(`Server returned invalid response. Status: ${response.status}. Response: ${responseText.substring(0, 100)}`);
+//       }
+
+//       if (!response.ok) {
+//         throw new Error(data.message || 'Registration failed');
+//       }
+
+//       console.log('✅ Registration successful!');
+
+//       // After successful registration, automatically log in
+//       try {
+//         console.log('🔍 Attempting auto-login...');
+//         const loginResponse = await fetch(`${API_BASE_URL}/login`, {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Accept': 'application/json',
+//           },
+//           body: JSON.stringify({ email, password }),
+//         });
+
+//         const loginText = await loginResponse.text();
+//         console.log('📄 Auto-login Response:', loginText);
+
+//         const loginData = JSON.parse(loginText);
+
+//         if (loginResponse.ok) {
+//           await storage.setItem('auth_token', loginData.token);
+//           await storage.setItem('auth_user', JSON.stringify(loginData.user));
+
+//           const user: User = {
+//             id: loginData.user.id.toString(),
+//             name: loginData.user.name,
+//             email: loginData.user.email,
+//             phone: loginData.user.phone || '',
+//             avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//             isPremium: false,
+//           };
+
+//           dispatch({ type: 'SET_AUTH', payload: { user, token: loginData.token } });
+//           console.log('✅ Auto-login successful!');
+//         } else {
+//           console.warn('⚠️ Auto-login failed:', loginData);
+//         }
+//       } catch (loginError) {
+//         console.warn('⚠️ Auto-login after registration failed:', loginError);
+//         // Don't throw here - registration was successful
+//       }
+
+//       return data;
+//     } catch (error) {
+//       console.error('❌ Registration error:', error);
+//       throw error;
+//     }
+//   }, []);
+
+//   const logout = useCallback(async () => {
+//     console.log('🔍 Logging out...');
+//     await storage.removeItem('auth_token');
+//     await storage.removeItem('auth_user');
+//     dispatch({ type: 'LOGOUT' });
+//     console.log('✅ Logout successful');
+//   }, []);
+
+//   const updateUser = useCallback((data: Partial<User>) => {
+//     if (state.user) {
+//       const updated = { ...state.user, ...data };
+//       storage.setItem('auth_user', JSON.stringify(updated));
+//       dispatch({ type: 'UPDATE_USER', payload: data });
+//       console.log('✅ User updated:', data);
+//     }
+//   }, [state.user]);
+
+//   return (
+//     <AuthContext.Provider value={{ state, login, register, logout, updateUser }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// }
+
+// export function useAuth() {
+//   const ctx = useContext(AuthContext);
+//   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+//   return ctx;
+// }
 
 
 
