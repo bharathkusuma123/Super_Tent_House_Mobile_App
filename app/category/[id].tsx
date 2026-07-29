@@ -44,7 +44,7 @@ function ListCard({ product, index }: { product: Product; index: number }) {
         activeOpacity={0.88}
       >
         <View style={lc.imageWrap}>
-          <Image source={{ uri: product.images[0] }} style={lc.image} />
+          <Image source={{ uri: product.images?.[0] || 'https://via.placeholder.com/300x300' }} style={lc.image} />
           {product.discount > 0 && (
             <View style={lc.badge}>
               <Text style={lc.badgeText}>{product.discount}% OFF</Text>
@@ -53,16 +53,16 @@ function ListCard({ product, index }: { product: Product; index: number }) {
         </View>
 
         <View style={lc.body}>
-          <Text style={lc.category}>{product.categoryName}</Text>
-          <Text style={lc.name} numberOfLines={2}>{product.name}</Text>
+          <Text style={lc.category}>{product.categoryName || 'Category'}</Text>
+          <Text style={lc.name} numberOfLines={2}>{product.name || 'Product'}</Text>
 
           <View style={lc.ratingRow}>
-            <RatingBadge rating={product.rating} size="sm" />
-            <Text style={lc.reviews}>({product.reviewCount} reviews)</Text>
+            <RatingBadge rating={product.rating || 0} size="sm" />
+            <Text style={lc.reviews}>({product.reviewCount || 0} reviews)</Text>
           </View>
 
           <View style={lc.priceRow}>
-            <Text style={lc.price}>₹{product.price.toLocaleString('en-IN')}</Text>
+            <Text style={lc.price}>₹{product.price?.toLocaleString('en-IN') || '0'}</Text>
             {product.originalPrice > product.price && (
               <Text style={lc.original}>₹{product.originalPrice.toLocaleString('en-IN')}</Text>
             )}
@@ -78,7 +78,15 @@ function ListCard({ product, index }: { product: Product; index: number }) {
             <TouchableOpacity
               style={lc.addBtn}
               onPress={() => {
-                addItem({ id: `${product.id}_${Date.now()}`, productId: product.id, name: product.name, image: product.images[0], price: product.price, quantity: 1, type: 'product' });
+                addItem({ 
+                  id: `${product.id}_${Date.now()}`, 
+                  productId: product.id, 
+                  name: product.name || 'Product', 
+                  image: product.images?.[0] || 'https://via.placeholder.com/300x300', 
+                  price: product.price || 0, 
+                  quantity: 1, 
+                  type: 'product' 
+                });
                 show('Added to cart');
               }}
             >
@@ -191,14 +199,30 @@ export default function CategoryScreen() {
   const heroTranslate = scrollY.interpolate({ inputRange: [0, 160], outputRange: [0, -40], extrapolate: 'clamp' });
 
   const load = useCallback(async () => {
-    const [cats, prods] = await Promise.all([
-      mockApi.getCategories(),
-      mockApi.getProductsByCategory(id),
-    ]);
-    setCategory(cats.find(c => c.id === id) ?? null);
-    setProducts(prods);
-    setFiltered(prods);
-    setLoading(false);
+    try {
+      console.log(`Loading category and products for ID: ${id}`);
+      
+      // Fetch categories and products in parallel
+      const [cats, prods] = await Promise.all([
+        mockApi.getCategories(),
+        mockApi.getProductsByCategory(id),
+      ]);
+      
+      // Find the category
+      const foundCategory = cats.find(c => c.id === id);
+      setCategory(foundCategory ?? null);
+      
+      // Filter out any invalid products
+      const validProducts = prods.filter(p => p && p.id && p.id !== '0');
+      setProducts(validProducts);
+      setFiltered(validProducts);
+      
+      console.log(`Found ${validProducts.length} products for category ${id}`);
+    } catch (error) {
+      console.error('Error loading category:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -232,7 +256,7 @@ export default function CategoryScreen() {
   const activeFilters = (priceRange !== 'all' ? 1 : 0) + (minRating > 0 ? 1 : 0) + (inStockOnly ? 1 : 0);
 
   const avgRating = products.length
-    ? (products.reduce((s, p) => s + p.rating, 0) / products.length).toFixed(1)
+    ? (products.reduce((s, p) => s + (p.rating || 0), 0) / products.length).toFixed(1)
     : '0';
 
   return (
@@ -340,20 +364,23 @@ export default function CategoryScreen() {
             )}
           </>
         }
-        renderItem={({ item, index }) =>
-          viewMode === 'list'
-            ? (
-              <View style={{ paddingHorizontal: SPACING.md }}>
-                <ListCard product={item as Product} index={index} />
-              </View>
-            )
-            : (
-              <View style={styles.gridCell}>
-                <ProductCard product={item as Product} index={index} />
-              </View>
-            )
-        }
-        keyExtractor={item => (item as Product).id}
+        renderItem={({ item, index }) => {
+          // Skip rendering invalid items
+          if (!item || !item.id || item.id === '0') {
+            return null;
+          }
+          
+          return viewMode === 'list' ? (
+            <View style={{ paddingHorizontal: SPACING.md }}>
+              <ListCard product={item} index={index} />
+            </View>
+          ) : (
+            <View style={styles.gridCell}>
+              <ProductCard product={item} index={index} />
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item.id || `item-${Math.random()}`}
         columnWrapperStyle={viewMode === 'grid' ? styles.columnWrapper : undefined}
         ListEmptyComponent={
           !loading ? (
