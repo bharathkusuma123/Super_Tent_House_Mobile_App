@@ -6497,7 +6497,1031 @@
 
 
 
-// services/api.ts - Complete with description mapping
+// // services/api.ts - Complete with description mapping
+// import axios from 'axios';
+// import { 
+//   products as mockProducts, 
+//   getProductById as mockGetProductById, 
+//   getProductsByCategory as mockGetProductsByCategory, 
+//   searchProducts as mockSearchProducts, 
+//   getTrendingProducts as mockGetTrendingProducts, 
+//   getBestSellers as mockGetBestSellers, 
+//   getNewArrivals as mockGetNewArrivals 
+// } from '@/mock/products';
+// import { categories as mockCategories } from '@/mock/categories';
+// import { 
+//   packages as mockPackages, 
+//   addOns as mockAddOns, 
+//   coupons as mockCoupons, 
+//   sampleOrders as mockSampleOrders, 
+//   sampleNotifications as mockSampleNotifications, 
+//   sampleAddresses as mockSampleAddresses, 
+//   testimonials as mockTestimonials, 
+//   whyChooseUs as mockWhyChooseUs, 
+//   heroBanners as mockHeroBanners 
+// } from '@/mock/data';
+// import { Product, Category, Package, AddOn, Coupon, Order, AppNotification, Address } from '@/types';
+
+// // ─── Configuration ──────────────────────────────────────────────
+// const USE_REAL_API = true;
+// export const API_BASE_URL = 'https://database-webshots-plastics-mask.trycloudflare.com/api';
+
+// // ─── Axios Instance ─────────────────────────────────────────────
+// const apiClient = axios.create({
+//   baseURL: API_BASE_URL,
+//   timeout: 15000,
+//   headers: {
+//     'Content-Type': 'application/json',
+//     'Accept': 'application/json',
+//   },
+// });
+
+// apiClient.interceptors.request.use(
+//   (config) => config,
+//   (error) => Promise.reject(error)
+// );
+
+// apiClient.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     console.error('API Error:', error.response?.data || error.message);
+//     return Promise.reject(error);
+//   }
+// );
+
+// // ─── Helper Functions ───────────────────────────────────────────
+// const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// export const getFullImageUrl = (imagePath?: string): string => {
+//   if (!imagePath) {
+//     return 'https://via.placeholder.com/300x300?text=No+Image';
+//   }
+//   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+//     return imagePath;
+//   }
+//   if (imagePath.startsWith('data:image')) {
+//     return imagePath;
+//   }
+//   const baseUrl = API_BASE_URL.replace('/api', '');
+//   if (imagePath.startsWith('uploads/')) {
+//     return `${baseUrl}/${imagePath}`;
+//   }
+//   if (imagePath.startsWith('/uploads/')) {
+//     return `${baseUrl}${imagePath}`;
+//   }
+//   if (!imagePath.includes('/')) {
+//     return `${baseUrl}/uploads/products/${imagePath}`;
+//   }
+//   return `${baseUrl}/${imagePath}`;
+// };
+
+// const parseProductImages = (apiProduct: any): string[] => {
+//   let images: string[] = [];
+//   if (Array.isArray(apiProduct.images) && apiProduct.images.length > 0) {
+//     images = apiProduct.images.map((img: any) => {
+//       if (typeof img === 'string') return getFullImageUrl(img);
+//       if (img.image_url) return getFullImageUrl(img.image_url);
+//       return getFullImageUrl(img);
+//     });
+//     return images;
+//   }
+//   if (apiProduct.product_images && typeof apiProduct.product_images === 'string') {
+//     try {
+//       const parsed = JSON.parse(apiProduct.product_images);
+//       if (Array.isArray(parsed)) {
+//         images = parsed.map((img: any) => {
+//           if (typeof img === 'string') return getFullImageUrl(img);
+//           if (img.image_url) return getFullImageUrl(img.image_url);
+//           return getFullImageUrl(img);
+//         });
+//         return images;
+//       }
+//     } catch (e) {
+//       console.log('Failed to parse product_images JSON:', e);
+//     }
+//   }
+//   if (Array.isArray(apiProduct.product_images)) {
+//     images = apiProduct.product_images.map((img: any) => {
+//       if (typeof img === 'string') return getFullImageUrl(img);
+//       if (img.image_url) return getFullImageUrl(img.image_url);
+//       return getFullImageUrl(img);
+//     });
+//     return images;
+//   }
+//   if (apiProduct.image) {
+//     return [getFullImageUrl(apiProduct.image)];
+//   }
+//   if (apiProduct.image_url) {
+//     return [getFullImageUrl(apiProduct.image_url)];
+//   }
+//   return ['https://via.placeholder.com/300x300?text=No+Image'];
+// };
+
+// const parseColorsArray = (apiProduct: any): string[] => {
+//   if (apiProduct.colors) {
+//     if (Array.isArray(apiProduct.colors)) return apiProduct.colors;
+//     if (typeof apiProduct.colors === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.colors);
+//         if (Array.isArray(parsed)) return parsed;
+//       } catch (e) {}
+//     }
+//   }
+//   if (apiProduct.color) return [apiProduct.color];
+//   return ['#6C63FF'];
+// };
+
+// const parseSizesArray = (apiProduct: any): string[] => {
+//   if (apiProduct.sizes) {
+//     if (Array.isArray(apiProduct.sizes)) return apiProduct.sizes;
+//     if (typeof apiProduct.sizes === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.sizes);
+//         if (Array.isArray(parsed)) return parsed;
+//       } catch (e) {}
+//     }
+//   }
+//   return ['Standard'];
+// };
+
+// const parseSpecifications = (apiProduct: any): Record<string, any> => {
+//   if (apiProduct.specifications) {
+//     if (typeof apiProduct.specifications === 'object' && !Array.isArray(apiProduct.specifications)) {
+//       return apiProduct.specifications;
+//     }
+//     if (typeof apiProduct.specifications === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.specifications);
+//         if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+//           return parsed;
+//         }
+//       } catch (e) {}
+//     }
+//   }
+//   const specs: Record<string, any> = {};
+//   if (apiProduct.material) specs.material = apiProduct.material;
+//   if (apiProduct.dimensions) specs.dimensions = apiProduct.dimensions;
+//   if (apiProduct.weight) specs.weight = apiProduct.weight;
+//   if (apiProduct.color) specs.color = apiProduct.color;
+//   if (apiProduct.warranty) specs.warranty = apiProduct.warranty;
+//   if (apiProduct.product_brand) specs.brand = apiProduct.product_brand;
+//   if (apiProduct.product_code) specs.code = apiProduct.product_code;
+//   if (Object.keys(specs).length === 0) {
+//     specs.material = 'Premium';
+//     specs.dimensions = 'Standard';
+//     specs.weight = 'N/A';
+//     specs.color = 'Multiple';
+//   }
+//   return specs;
+// };
+
+// const parseFeatures = (apiProduct: any): string[] => {
+//   if (apiProduct.features) {
+//     if (Array.isArray(apiProduct.features)) return apiProduct.features;
+//     if (typeof apiProduct.features === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.features);
+//         if (Array.isArray(parsed)) return parsed;
+//       } catch (e) {}
+//     }
+//   }
+//   const features = [];
+//   if (apiProduct.material) features.push(`Premium ${apiProduct.material} Material`);
+//   if (apiProduct.warranty) features.push(apiProduct.warranty);
+//   if (apiProduct.color) features.push(`Available in ${apiProduct.color}`);
+//   if (apiProduct.dimensions) features.push(`Dimensions: ${apiProduct.dimensions}`);
+//   if (apiProduct.weight) features.push(`Weight: ${apiProduct.weight}`);
+//   if (features.length === 0) features.push('Premium Quality', 'Durable', 'Elegant Design');
+//   return features;
+// };
+
+// const parseColorImages = (apiProduct: any): Record<string, string[]> => {
+//   let colorImagesMap: Record<string, string[]> = {};
+//   if (apiProduct.color_images) {
+//     let parsedColorImages: any;
+//     if (typeof apiProduct.color_images === 'string') {
+//       try {
+//         parsedColorImages = JSON.parse(apiProduct.color_images);
+//       } catch (e) {
+//         return {};
+//       }
+//     } else {
+//       parsedColorImages = apiProduct.color_images;
+//     }
+//     if (typeof parsedColorImages === 'object') {
+//       Object.keys(parsedColorImages).forEach(color => {
+//         const images = parsedColorImages[color];
+//         if (Array.isArray(images)) {
+//           colorImagesMap[color] = images.map((img: any) => {
+//             let imagePath = '';
+//             if (typeof img === 'string') imagePath = img;
+//             else if (img.image_url) imagePath = img.image_url;
+//             else imagePath = String(img);
+//             return getFullImageUrl(imagePath);
+//           });
+//         }
+//       });
+//     }
+//   }
+//   return colorImagesMap;
+// };
+
+// const mapCategory = (apiCategory: any): Category => {
+//   const imageUrl = getFullImageUrl(apiCategory.image);
+//   return {
+//     id: apiCategory.id?.toString() || '',
+//     name: apiCategory.category_name || apiCategory.name || '',
+//     category_name: apiCategory.category_name || apiCategory.name || '',
+//     image: imageUrl,
+//     productCount: apiCategory.product_count || apiCategory.productCount || 0,
+//     slug: apiCategory.slug || apiCategory.category_name?.toLowerCase().replace(/\s+/g, '-') || '',
+//     icon: apiCategory.icon || '🎨',
+//     color: apiCategory.color || '#6C63FF',
+//   };
+// };
+
+// // ─── Map backend product to frontend Product type ──────────────
+// const mapProduct = (apiProduct: any): Product => {
+//   const price = Number(apiProduct.price) || 0;
+//   const originalPrice = Number(apiProduct.original_price) || Number(apiProduct.originalPrice) || price;
+  
+//   let discount = Number(apiProduct.discount) || 0;
+//   if (originalPrice > price && discount === 0) {
+//     discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+//   }
+  
+//   const images = parseProductImages(apiProduct);
+//   const features = parseFeatures(apiProduct);
+//   const specifications = parseSpecifications(apiProduct);
+//   const colors = parseColorsArray(apiProduct);
+//   const sizes = parseSizesArray(apiProduct);
+//   const colorImages = parseColorImages(apiProduct);
+  
+//   // ─── FIX: Extract description from multiple possible fields ──────────────────
+//   let description = '';
+  
+//   console.log('📝 Raw description fields:', {
+//     product_description: apiProduct.product_description,
+//     description: apiProduct.description,
+//     long_description: apiProduct.long_description,
+//     short_description: apiProduct.short_description,
+//   });
+  
+//   if (apiProduct.product_description && apiProduct.product_description.trim() !== '') {
+//     description = apiProduct.product_description;
+//     console.log('✅ Using product_description:', description.substring(0, 50) + '...');
+//   } else if (apiProduct.description && apiProduct.description.trim() !== '') {
+//     description = apiProduct.description;
+//     console.log('✅ Using description:', description.substring(0, 50) + '...');
+//   } else if (apiProduct.long_description && apiProduct.long_description.trim() !== '') {
+//     description = apiProduct.long_description;
+//     console.log('✅ Using long_description:', description.substring(0, 50) + '...');
+//   } else if (apiProduct.short_description && apiProduct.short_description.trim() !== '') {
+//     description = apiProduct.short_description;
+//     console.log('✅ Using short_description:', description.substring(0, 50) + '...');
+//   } else {
+//     description = `High-quality ${apiProduct.product_name || 'product'} perfect for your needs. Features premium materials and excellent craftsmanship.`;
+//     console.log('⚠️ Using fallback description');
+//   }
+  
+//   let reviews: any[] = [];
+//   if (apiProduct.reviews) {
+//     if (Array.isArray(apiProduct.reviews)) reviews = apiProduct.reviews;
+//     if (typeof apiProduct.reviews === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.reviews);
+//         if (Array.isArray(parsed)) reviews = parsed;
+//       } catch (e) {}
+//     }
+//   }
+  
+//   let relatedIds: string[] = [];
+//   if (apiProduct.related_ids) {
+//     if (Array.isArray(apiProduct.related_ids)) relatedIds = apiProduct.related_ids.map((id: any) => id.toString());
+//     if (typeof apiProduct.related_ids === 'string') {
+//       try {
+//         const parsed = JSON.parse(apiProduct.related_ids);
+//         if (Array.isArray(parsed)) relatedIds = parsed.map((id: any) => id.toString());
+//       } catch (e) {}
+//     }
+//   }
+
+//   return {
+//     id: apiProduct.id?.toString() || '',
+//     name: apiProduct.product_name || apiProduct.name || 'Product',
+//     description: description,
+//     price: price,
+//     originalPrice: originalPrice,
+//     discount: discount,
+//     images: images,
+//     categoryId: apiProduct.product_category_id?.toString() || apiProduct.category_id?.toString() || apiProduct.categoryId?.toString() || '',
+//     categoryName: apiProduct.category_name || apiProduct.categoryName || '',
+//     rating: Number(apiProduct.rating) || 0,
+//     reviewCount: Number(apiProduct.review_count) || Number(apiProduct.reviewCount) || 0,
+//     inStock: Number(apiProduct.available_stock) > 0 || Boolean(apiProduct.in_stock) || true,
+//     isTrending: Boolean(apiProduct.is_trending || apiProduct.isTrending),
+//     isBestSeller: Boolean(apiProduct.is_best_seller || apiProduct.isBestSeller),
+//     features: features,
+//     specifications: specifications,
+//     colors: colors,
+//     sizes: sizes,
+//     color_images: colorImages,
+//     stockCount: Number(apiProduct.available_stock) || Number(apiProduct.stock_count) || Number(apiProduct.stockCount) || 10,
+//     soldCount: Number(apiProduct.sold_count) || Number(apiProduct.soldCount) || 0,
+//     isFeatured: Boolean(apiProduct.is_featured || apiProduct.isFeatured),
+//     brand: apiProduct.product_brand || apiProduct.brand || '',
+//     weight: apiProduct.weight || 'N/A',
+//     dimensions: apiProduct.dimensions || 'Standard',
+//     material: apiProduct.material || 'Premium',
+//     careInstructions: apiProduct.care_instructions || apiProduct.careInstructions || 'Dry clean only',
+//     warranty: apiProduct.warranty || '1 year manufacturer warranty',
+//     returnPolicy: apiProduct.return_policy || apiProduct.returnPolicy || '30 days return policy',
+//     shippingInfo: apiProduct.shipping_info || apiProduct.shippingInfo || 'Free shipping on orders above ₹500',
+//     reviews: reviews.length > 0 ? reviews : [
+//       {
+//         id: '1',
+//         userName: 'Rahul Sharma',
+//         userAvatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//         rating: 5,
+//         comment: 'Excellent quality! The decoration was perfect for our wedding.',
+//         date: '2024-12-15'
+//       },
+//       {
+//         id: '2',
+//         userName: 'Priya Patel',
+//         userAvatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400',
+//         rating: 4,
+//         comment: 'Great product, delivery was on time. Highly recommend!',
+//         date: '2024-12-10'
+//       }
+//     ],
+//     relatedIds: relatedIds,
+//   };
+// };
+
+// // ─── Map backend package to frontend Package type ──────────────
+// const mapPackage = (apiPackage: any): Package => {
+//   let includes: string[] = [];
+//   let catering: any = false;
+//   let stageDecoration: any = false;
+//   let flowerDecoration: any = false;
+//   let lighting: any = false;
+//   let photography: any = false;
+//   let videography: any = false;
+//   let soundSystem: any = false;
+
+//   try {
+//     includes = apiPackage.includes ? (typeof apiPackage.includes === 'string' ? JSON.parse(apiPackage.includes) : apiPackage.includes) : [];
+//   } catch (e) { includes = []; }
+
+//   try {
+//     if (apiPackage.catering !== undefined && apiPackage.catering !== null) {
+//       catering = typeof apiPackage.catering === 'string' ? JSON.parse(apiPackage.catering) : apiPackage.catering;
+//     }
+//   } catch (e) { catering = false; }
+
+//   try {
+//     if (apiPackage.stage_decoration !== undefined && apiPackage.stage_decoration !== null) {
+//       stageDecoration = typeof apiPackage.stage_decoration === 'string' ? JSON.parse(apiPackage.stage_decoration) : apiPackage.stage_decoration;
+//     }
+//   } catch (e) { stageDecoration = false; }
+
+//   try {
+//     if (apiPackage.flower_decoration !== undefined && apiPackage.flower_decoration !== null) {
+//       flowerDecoration = typeof apiPackage.flower_decoration === 'string' ? JSON.parse(apiPackage.flower_decoration) : apiPackage.flower_decoration;
+//     }
+//   } catch (e) { flowerDecoration = false; }
+
+//   try {
+//     if (apiPackage.lighting !== undefined && apiPackage.lighting !== null) {
+//       lighting = typeof apiPackage.lighting === 'string' ? JSON.parse(apiPackage.lighting) : apiPackage.lighting;
+//     }
+//   } catch (e) { lighting = false; }
+
+//   try {
+//     if (apiPackage.photography !== undefined && apiPackage.photography !== null) {
+//       photography = typeof apiPackage.photography === 'string' ? JSON.parse(apiPackage.photography) : apiPackage.photography;
+//     }
+//   } catch (e) { photography = false; }
+
+//   try {
+//     if (apiPackage.videography !== undefined && apiPackage.videography !== null) {
+//       videography = typeof apiPackage.videography === 'string' ? JSON.parse(apiPackage.videography) : apiPackage.videography;
+//     }
+//   } catch (e) { videography = false; }
+
+//   try {
+//     if (apiPackage.sound_system !== undefined && apiPackage.sound_system !== null) {
+//       soundSystem = typeof apiPackage.sound_system === 'string' ? JSON.parse(apiPackage.sound_system) : apiPackage.sound_system;
+//     }
+//   } catch (e) { soundSystem = false; }
+
+//   let images: string[] = [];
+//   try {
+//     if (apiPackage.images && typeof apiPackage.images === 'string') {
+//       images = JSON.parse(apiPackage.images);
+//     } else if (Array.isArray(apiPackage.images)) {
+//       images = apiPackage.images;
+//     } else if (apiPackage.image_url) {
+//       images = [apiPackage.image_url];
+//     }
+//   } catch (e) {
+//     images = apiPackage.image_url ? [apiPackage.image_url] : ['https://via.placeholder.com/300x200'];
+//   }
+
+//   let tier: 'Basic' | 'Premium' | 'Luxury' | 'Silver' | 'Gold' | 'Platinum' = 'Basic';
+//   const tierMap: Record<string, any> = {
+//     'basic': 'Basic',
+//     'premium': 'Premium',
+//     'luxury': 'Luxury',
+//     'silver': 'Silver',
+//     'gold': 'Gold',
+//     'platinum': 'Platinum'
+//   };
+//   if (apiPackage.tier && tierMap[apiPackage.tier.toLowerCase()]) {
+//     tier = tierMap[apiPackage.tier.toLowerCase()];
+//   }
+
+//   return {
+//     id: apiPackage.id?.toString() || '',
+//     name: apiPackage.package_name || apiPackage.name || '',
+//     tier: tier,
+//     price: Number(apiPackage.price) || 0,
+//     originalPrice: Number(apiPackage.original_price) || Number(apiPackage.originalPrice) || 0,
+//     discount: Number(apiPackage.discount) || 0,
+//     rating: Number(apiPackage.rating) || 0,
+//     reviewCount: Number(apiPackage.review_count) || 0,
+//     image: apiPackage.image_url || (images && images[0]) || 'https://via.placeholder.com/300x200',
+//     images: images,
+//     guestCapacity: Number(apiPackage.guest_capacity) || 0,
+//     description: apiPackage.description || '',
+//     includes: includes,
+//     catering: catering,
+//     stageDecoration: stageDecoration,
+//     flowerDecoration: flowerDecoration,
+//     lighting: lighting,
+//     photography: photography,
+//     videography: videography,
+//     soundSystem: soundSystem,
+//     djSetup: Boolean(apiPackage.dj_setup || apiPackage.djSetup),
+//     isActive: apiPackage.is_active !== undefined ? Boolean(apiPackage.is_active) : true,
+//   };
+// };
+
+// // ─── API Service ──────────────────────────────────────────────────
+// export const mockApi = {
+//   async getCategories(): Promise<Category[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/categories');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapCategory);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch categories from API:', error);
+//         await delay(400);
+//         return mockCategories;
+//       }
+//     }
+//     await delay(400);
+//     return mockCategories;
+//   },
+
+//   async getCategoryById(id: string): Promise<Category | null> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get(`/categories/${id}`);
+//         const data = response.data;
+//         return mapCategory(data);
+//       } catch (error) {
+//         console.error('Failed to fetch category from API:', error);
+//         await delay(300);
+//         return mockCategories.find(c => c.id === id) || null;
+//       }
+//     }
+//     await delay(300);
+//     return mockCategories.find(c => c.id === id) || null;
+//   },
+
+//   async getProducts(): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/products');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapProduct);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch products from API:', error);
+//         await delay(500);
+//         return mockProducts;
+//       }
+//     }
+//     await delay(500);
+//     return mockProducts;
+//   },
+
+//   async getProductsByCategory(categoryId: string): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         console.log(`Fetching products for category: ${categoryId}`);
+//         const response = await apiClient.get(`/products/category/${categoryId}`);
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           const mappedProducts = data.map(mapProduct);
+//           console.log(`Mapped ${mappedProducts.length} products for category ${categoryId}`);
+//           return mappedProducts;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Category endpoint failed, trying fallback:', error);
+//         try {
+//           const response = await apiClient.get('/products');
+//           const data = response.data;
+//           if (Array.isArray(data)) {
+//             const filtered = data.filter((p: any) => 
+//               p.product_category_id?.toString() === categoryId || 
+//               p.category_id?.toString() === categoryId
+//             );
+//             return filtered.map(mapProduct);
+//           }
+//           return [];
+//         } catch (fallbackError) {
+//           console.error('Failed to fetch products by category from API:', fallbackError);
+//           await delay(400);
+//           return mockGetProductsByCategory(categoryId);
+//         }
+//       }
+//     }
+//     await delay(400);
+//     return mockGetProductsByCategory(categoryId);
+//   },
+
+//   async getProduct(id: string): Promise<Product | undefined> {
+//     if (USE_REAL_API) {
+//       try {
+//         console.log(`🔍 Fetching product details for ID: ${id}`);
+//         const response = await apiClient.get(`/products/${id}`);
+//         const data = response.data;
+        
+//         console.log('📝 Product fields:', {
+//           product_description: data.product_description,
+//           colors: data.colors,
+//           sizes: data.sizes,
+//         });
+        
+//         const mappedProduct = mapProduct(data);
+//         console.log('✅ Mapped product description:', mappedProduct.description?.substring(0, 50) + '...');
+//         return mappedProduct;
+//       } catch (error) {
+//         console.error('❌ Failed to fetch product from API:', error);
+//         await delay(300);
+//         return mockGetProductById(id);
+//       }
+//     }
+//     await delay(300);
+//     return mockGetProductById(id);
+//   },
+
+//   async getTrending(): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/products/trending');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapProduct);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Trending endpoint failed:', error);
+//         await delay(400);
+//         return mockGetTrendingProducts();
+//       }
+//     }
+//     await delay(400);
+//     return mockGetTrendingProducts();
+//   },
+
+//   async getBestSellers(): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/products/best-sellers');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapProduct);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Best sellers endpoint failed:', error);
+//         await delay(400);
+//         return mockGetBestSellers();
+//       }
+//     }
+//     await delay(400);
+//     return mockGetBestSellers();
+//   },
+
+//   async getNewArrivals(): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/products/new-arrivals');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapProduct);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('New arrivals endpoint failed:', error);
+//         await delay(400);
+//         return mockGetNewArrivals();
+//       }
+//     }
+//     await delay(400);
+//     return mockGetNewArrivals();
+//   },
+
+//   async search(query: string): Promise<Product[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get(`/products/search?q=${encodeURIComponent(query)}`);
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapProduct);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Search endpoint failed:', error);
+//         await delay(300);
+//         return mockSearchProducts(query);
+//       }
+//     }
+//     await delay(300);
+//     return mockSearchProducts(query);
+//   },
+
+//   async getPackages(): Promise<Package[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/packages');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapPackage);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch packages from API:', error);
+//         await delay(400);
+//         return mockPackages;
+//       }
+//     }
+//     await delay(400);
+//     return mockPackages;
+//   },
+
+//   async getPackage(id: string): Promise<Package | undefined> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get(`/packages/${id}`);
+//         const data = response.data;
+//         return mapPackage(data);
+//       } catch (error) {
+//         console.error('Failed to fetch package from API:', error);
+//         await delay(300);
+//         return mockPackages.find(p => p.id === id);
+//       }
+//     }
+//     await delay(300);
+//     return mockPackages.find(p => p.id === id);
+//   },
+
+//   async getPackagesByTier(tier: string): Promise<Package[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get(`/packages/tier/${tier}`);
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map(mapPackage);
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch packages by tier from API:', error);
+//         await delay(300);
+//         return mockPackages.filter(p => p.tier.toLowerCase() === tier.toLowerCase());
+//       }
+//     }
+//     await delay(300);
+//     return mockPackages.filter(p => p.tier.toLowerCase() === tier.toLowerCase());
+//   },
+
+//   async getAddOns(): Promise<AddOn[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/addons');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map((item: any) => ({
+//             id: item.id?.toString() || '',
+//             name: item.name || '',
+//             price: Number(item.price) || 0,
+//             icon: item.icon || '📦',
+//             description: item.description || '',
+//           }));
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch add-ons from API:', error);
+//         await delay(200);
+//         return mockAddOns;
+//       }
+//     }
+//     await delay(200);
+//     return mockAddOns;
+//   },
+
+//   async getCoupons(): Promise<Coupon[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/coupons');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch coupons from API:', error);
+//         await delay(200);
+//         return mockCoupons;
+//       }
+//     }
+//     await delay(200);
+//     return mockCoupons;
+//   },
+
+//   async getOrders(): Promise<Order[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/orders');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch orders from API:', error);
+//         await delay(400);
+//         return mockSampleOrders;
+//       }
+//     }
+//     await delay(400);
+//     return mockSampleOrders;
+//   },
+
+//   async getNotifications(): Promise<AppNotification[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/notifications');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch notifications from API:', error);
+//         await delay(300);
+//         return mockSampleNotifications;
+//       }
+//     }
+//     await delay(300);
+//     return mockSampleNotifications;
+//   },
+
+//   async getAddresses(): Promise<Address[]> {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/addresses');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch addresses from API:', error);
+//         await delay(300);
+//         return mockSampleAddresses;
+//       }
+//     }
+//     await delay(300);
+//     return mockSampleAddresses;
+//   },
+
+//   async getTestimonials() {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/testimonials');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch testimonials from API:', error);
+//         await delay(300);
+//         return mockTestimonials;
+//       }
+//     }
+//     await delay(300);
+//     return mockTestimonials;
+//   },
+
+//   async getWhyChooseUs() {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/why-choose-us');
+//         const data = response.data.data || response.data;
+//         if (Array.isArray(data)) {
+//           return data;
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch why choose us from API:', error);
+//         await delay(200);
+//         return mockWhyChooseUs;
+//       }
+//     }
+//     await delay(200);
+//     return mockWhyChooseUs;
+//   },
+
+//   async getHeroBanners() {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.get('/hero-banners');
+//         const data = response.data;
+//         if (Array.isArray(data)) {
+//           return data.map((item: any) => ({
+//             id: item.id?.toString() || '',
+//             title: item.title || '',
+//             subtitle: item.subtitle || '',
+//             image: item.image || item.image_url || 'https://via.placeholder.com/800x400',
+//             cta: item.cta || item.cta_text || 'Learn More',
+//             ctaLink: item.cta_link || '/',
+//             displayOrder: Number(item.display_order) || 0,
+//             isActive: item.is_active !== undefined ? Boolean(item.is_active) : true,
+//           }));
+//         }
+//         return [];
+//       } catch (error) {
+//         console.error('Failed to fetch hero banners from API:', error);
+//         await delay(200);
+//         return mockHeroBanners;
+//       }
+//     }
+//     await delay(200);
+//     return mockHeroBanners;
+//   },
+
+//   async login(email: string, password: string) {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.post('/customers/login', { email, password });
+//         const data = response.data.data || response.data;
+//         return {
+//           token: data.token || 'mock_jwt_token_' + Date.now(),
+//           user: data.user || {
+//             id: 'u1',
+//             name: 'Arjun Patel',
+//             email,
+//             phone: '+91 98765 43210',
+//             avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//             isPremium: true,
+//           },
+//         };
+//       } catch (error) {
+//         console.error('Login failed:', error);
+//         await delay(800);
+//         return {
+//           token: 'mock_jwt_token_' + Date.now(),
+//           user: {
+//             id: 'u1',
+//             name: 'Arjun Patel',
+//             email,
+//             phone: '+91 98765 43210',
+//             avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//             isPremium: true,
+//           },
+//         };
+//       }
+//     }
+//     await delay(800);
+//     return {
+//       token: 'mock_jwt_token_' + Date.now(),
+//       user: {
+//         id: 'u1',
+//         name: 'Arjun Patel',
+//         email,
+//         phone: '+91 98765 43210',
+//         avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//         isPremium: true,
+//       },
+//     };
+//   },
+
+//   async register(name: string, email: string, password: string) {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.post('/customers/register', { name, email, password });
+//         const data = response.data.data || response.data;
+//         return {
+//           token: data.token || 'mock_jwt_token_' + Date.now(),
+//           user: data.user || {
+//             id: 'u' + Date.now(),
+//             name,
+//             email,
+//             phone: '',
+//             avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//             isPremium: false,
+//           },
+//         };
+//       } catch (error) {
+//         console.error('Registration failed:', error);
+//         await delay(1000);
+//         return {
+//           token: 'mock_jwt_token_' + Date.now(),
+//           user: {
+//             id: 'u' + Date.now(),
+//             name,
+//             email,
+//             phone: '',
+//             avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//             isPremium: false,
+//           },
+//         };
+//       }
+//     }
+//     await delay(1000);
+//     return {
+//       token: 'mock_jwt_token_' + Date.now(),
+//       user: {
+//         id: 'u' + Date.now(),
+//         name,
+//         email,
+//         phone: '',
+//         avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+//         isPremium: false,
+//       },
+//     };
+//   },
+
+//   async verifyOtp(otp: string) {
+//     if (USE_REAL_API) {
+//       try {
+//         const response = await apiClient.post('/customers/verify-otp', { otp });
+//         return { success: true };
+//       } catch (error) {
+//         console.error('OTP verification failed:', error);
+//         await delay(600);
+//         return { success: true };
+//       }
+//     }
+//     await delay(600);
+//     return { success: true };
+//   },
+// };
+
+// export const getCategories = mockApi.getCategories.bind(mockApi);
+// export const getCategoryById = mockApi.getCategoryById.bind(mockApi);
+// export const getProducts = mockApi.getProducts.bind(mockApi);
+// export const getProductsByCategory = mockApi.getProductsByCategory.bind(mockApi);
+// export const getProduct = mockApi.getProduct.bind(mockApi);
+// export const getTrending = mockApi.getTrending.bind(mockApi);
+// export const getBestSellers = mockApi.getBestSellers.bind(mockApi);
+// export const getNewArrivals = mockApi.getNewArrivals.bind(mockApi);
+// export const search = mockApi.search.bind(mockApi);
+// export const getPackages = mockApi.getPackages.bind(mockApi);
+// export const getPackage = mockApi.getPackage.bind(mockApi);
+// export const getPackagesByTier = mockApi.getPackagesByTier.bind(mockApi);
+// export const getAddOns = mockApi.getAddOns.bind(mockApi);
+// export const getCoupons = mockApi.getCoupons.bind(mockApi);
+// export const getOrders = mockApi.getOrders.bind(mockApi);
+// export const getNotifications = mockApi.getNotifications.bind(mockApi);
+// export const getAddresses = mockApi.getAddresses.bind(mockApi);
+// export const getTestimonials = mockApi.getTestimonials.bind(mockApi);
+// export const getWhyChooseUs = mockApi.getWhyChooseUs.bind(mockApi);
+// export const getHeroBanners = mockApi.getHeroBanners.bind(mockApi);
+// export const login = mockApi.login.bind(mockApi);
+// export const register = mockApi.register.bind(mockApi);
+// export const verifyOtp = mockApi.verifyOtp.bind(mockApi);
+
+// export { apiClient };
+
+
+
+
+
+// services/api.ts - Complete with address support
 import axios from 'axios';
 import { 
   products as mockProducts, 
@@ -6757,31 +7781,19 @@ const mapProduct = (apiProduct: any): Product => {
   const sizes = parseSizesArray(apiProduct);
   const colorImages = parseColorImages(apiProduct);
   
-  // ─── FIX: Extract description from multiple possible fields ──────────────────
+  // ─── Extract description from multiple possible fields ──────────────────
   let description = '';
-  
-  console.log('📝 Raw description fields:', {
-    product_description: apiProduct.product_description,
-    description: apiProduct.description,
-    long_description: apiProduct.long_description,
-    short_description: apiProduct.short_description,
-  });
   
   if (apiProduct.product_description && apiProduct.product_description.trim() !== '') {
     description = apiProduct.product_description;
-    console.log('✅ Using product_description:', description.substring(0, 50) + '...');
   } else if (apiProduct.description && apiProduct.description.trim() !== '') {
     description = apiProduct.description;
-    console.log('✅ Using description:', description.substring(0, 50) + '...');
   } else if (apiProduct.long_description && apiProduct.long_description.trim() !== '') {
     description = apiProduct.long_description;
-    console.log('✅ Using long_description:', description.substring(0, 50) + '...');
   } else if (apiProduct.short_description && apiProduct.short_description.trim() !== '') {
     description = apiProduct.short_description;
-    console.log('✅ Using short_description:', description.substring(0, 50) + '...');
   } else {
     description = `High-quality ${apiProduct.product_name || 'product'} perfect for your needs. Features premium materials and excellent craftsmanship.`;
-    console.log('⚠️ Using fallback description');
   }
   
   let reviews: any[] = [];
@@ -7383,36 +8395,46 @@ export const mockApi = {
     return mockHeroBanners;
   },
 
+  // ─── AUTHENTICATION WITH ADDRESS SUPPORT ──────────────────────────────────
+  
   async login(email: string, password: string) {
     if (USE_REAL_API) {
       try {
         const response = await apiClient.post('/customers/login', { email, password });
         const data = response.data.data || response.data;
+        
+        // Check if OTP is required
+        if (data.requiresOTP) {
+          return {
+            requiresOTP: true,
+            email: data.email,
+            message: data.message
+          };
+        }
+        
         return {
-          token: data.token || 'mock_jwt_token_' + Date.now(),
-          user: data.user || {
-            id: 'u1',
-            name: 'Arjun Patel',
-            email,
-            phone: '+91 98765 43210',
-            avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
-            isPremium: true,
-          },
-        };
-      } catch (error) {
-        console.error('Login failed:', error);
-        await delay(800);
-        return {
-          token: 'mock_jwt_token_' + Date.now(),
+          token: data.token,
           user: {
-            id: 'u1',
-            name: 'Arjun Patel',
-            email,
-            phone: '+91 98765 43210',
-            avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
-            isPremium: true,
+            id: data.user.id?.toString() || 'u1',
+            name: data.user.name || '',
+            email: data.user.email || email,
+            phone: data.user.phone || '',
+            avatar: data.user.avatar || 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+            isPremium: data.user.isPremium || false,
+            addressLine1: data.user.address_line1 || data.user.addressLine1 || '',
+            addressLine2: data.user.address_line2 || data.user.addressLine2 || '',
+            city: data.user.city || '',
+            state: data.user.state || '',
+            pincode: data.user.pincode || '',
+            country: data.user.country || 'India'
           },
         };
+      } catch (error: any) {
+        console.error('Login failed:', error);
+        if (error.response?.data) {
+          throw new Error(error.response.data.message || 'Login failed');
+        }
+        throw error;
       }
     }
     await delay(800);
@@ -7425,69 +8447,133 @@ export const mockApi = {
         phone: '+91 98765 43210',
         avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
         isPremium: true,
+        addressLine1: '123 Main Street',
+        addressLine2: 'Apt 4B',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        pincode: '400001',
+        country: 'India'
       },
     };
   },
 
-  async register(name: string, email: string, password: string) {
+  async register(name: string, email: string, password: string, phone?: string, address?: any) {
     if (USE_REAL_API) {
       try {
-        const response = await apiClient.post('/customers/register', { name, email, password });
+        const payload = {
+          name,
+          email,
+          password,
+          phone: phone || '',
+          addressLine1: address?.addressLine1 || '',
+          addressLine2: address?.addressLine2 || '',
+          city: address?.city || '',
+          state: address?.state || '',
+          pincode: address?.pincode || '',
+          country: address?.country || 'India'
+        };
+        
+        console.log('📦 Registration Payload:', { ...payload, password: '***' });
+        
+        const response = await apiClient.post('/customers/register', payload);
         const data = response.data.data || response.data;
+        
         return {
-          token: data.token || 'mock_jwt_token_' + Date.now(),
-          user: data.user || {
-            id: 'u' + Date.now(),
-            name,
-            email,
-            phone: '',
-            avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
-            isPremium: false,
-          },
+          message: data.message || 'Registration successful',
+          email: data.email || email,
+          requiresOTP: data.requiresOTP || true,
         };
-      } catch (error) {
+      } catch (error: any) {
         console.error('Registration failed:', error);
-        await delay(1000);
-        return {
-          token: 'mock_jwt_token_' + Date.now(),
-          user: {
-            id: 'u' + Date.now(),
-            name,
-            email,
-            phone: '',
-            avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
-            isPremium: false,
-          },
-        };
+        if (error.response?.data) {
+          throw new Error(error.response.data.message || 'Registration failed');
+        }
+        throw error;
       }
     }
     await delay(1000);
     return {
-      token: 'mock_jwt_token_' + Date.now(),
-      user: {
-        id: 'u' + Date.now(),
-        name,
-        email,
-        phone: '',
-        avatar: 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
-        isPremium: false,
-      },
+      message: 'Registration successful',
+      email: email,
+      requiresOTP: true,
     };
   },
 
-  async verifyOtp(otp: string) {
+  async verifyOtp(email: string, otp: string) {
     if (USE_REAL_API) {
       try {
-        const response = await apiClient.post('/customers/verify-otp', { otp });
-        return { success: true };
-      } catch (error) {
+        const response = await apiClient.post('/customers/verify-otp', { email, otp });
+        const data = response.data.data || response.data;
+        return {
+          token: data.token,
+          user: {
+            id: data.user.id?.toString() || 'u1',
+            name: data.user.name || '',
+            email: data.user.email || email,
+            phone: data.user.phone || '',
+            avatar: data.user.avatar || 'https://images.pexels.com/photos/220457/pexels-photo-220457.jpeg?auto=compress&cs=tinysrgb&w=400',
+            isPremium: data.user.isPremium || false,
+            addressLine1: data.user.address_line1 || data.user.addressLine1 || '',
+            addressLine2: data.user.address_line2 || data.user.addressLine2 || '',
+            city: data.user.city || '',
+            state: data.user.state || '',
+            pincode: data.user.pincode || '',
+            country: data.user.country || 'India'
+          },
+          message: data.message || 'OTP verified successfully'
+        };
+      } catch (error: any) {
         console.error('OTP verification failed:', error);
-        await delay(600);
-        return { success: true };
+        if (error.response?.data) {
+          throw new Error(error.response.data.message || 'OTP verification failed');
+        }
+        throw error;
       }
     }
     await delay(600);
     return { success: true };
+  },
+
+  async resendOtp(email: string) {
+    if (USE_REAL_API) {
+      try {
+        const response = await apiClient.post('/customers/resend-otp', { email });
+        const data = response.data.data || response.data;
+        return {
+          message: data.message || 'OTP resent successfully',
+          email: data.email || email
+        };
+      } catch (error: any) {
+        console.error('Resend OTP failed:', error);
+        if (error.response?.data) {
+          throw new Error(error.response.data.message || 'Failed to resend OTP');
+        }
+        throw error;
+      }
+    }
+    await delay(600);
+    return { success: true };
+  },
+
+  async updateAddress(userId: string, address: any) {
+    if (USE_REAL_API) {
+      try {
+        const response = await apiClient.put(`/customers/update-address/${userId}`, {
+          addressLine1: address.addressLine1 || '',
+          addressLine2: address.addressLine2 || '',
+          city: address.city || '',
+          state: address.state || '',
+          pincode: address.pincode || '',
+          country: address.country || 'India'
+        });
+        return response.data;
+      } catch (error: any) {
+        console.error('Update address failed:', error);
+        throw error;
+      }
+    }
+    await delay(400);
+    return { message: 'Address updated successfully' };
   },
 };
 
@@ -7514,5 +8600,7 @@ export const getHeroBanners = mockApi.getHeroBanners.bind(mockApi);
 export const login = mockApi.login.bind(mockApi);
 export const register = mockApi.register.bind(mockApi);
 export const verifyOtp = mockApi.verifyOtp.bind(mockApi);
+export const resendOtp = mockApi.resendOtp.bind(mockApi);
+export const updateAddress = mockApi.updateAddress.bind(mockApi);
 
 export { apiClient };
