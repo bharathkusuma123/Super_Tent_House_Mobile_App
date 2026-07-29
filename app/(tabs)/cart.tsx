@@ -1,26 +1,144 @@
-import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
+
+
+
+
+// app/(tabs)/cart.tsx
+import { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Minus, Plus, Trash2, Heart, Tag, ShoppingBag, ChevronRight, X } from 'lucide-react-native';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { useCart } from '@/store/cart';
+import { useAuth } from '@/store/auth';
 import { useWishlist } from '@/store/wishlist';
 import { useToast } from '@/store/toast';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { coupons } from '@/mock/data';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import axios from 'axios';
+import { API_BASE_URL } from '@/services/api';
 
 export default function CartScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { state, removeItem, updateQty, saveForLater, applyCoupon, removeCoupon, subtotal, deliveryCharge, gst, grandTotal, totalItems } = useCart();
+  const { state, removeItem, updateQty, saveForLater, applyCoupon, removeCoupon, subtotal, deliveryCharge, gst, grandTotal, totalItems, clearCart, fetchCart } = useCart();
+  const { state: authState } = useAuth();
   const { toggle } = useWishlist();
   const { show } = useToast();
-  const [couponInput, setCouponInput] = useState('');
   const [showCoupons, setShowCoupons] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [localItems, setLocalItems] = useState<any[]>([]);
 
-  const handleApplyCoupon = (code: string, discount: number, minOrder: number) => {
+  const customerId = authState.user?.id;
+
+  // ─── Load cart on mount ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (customerId) {
+      fetchCart(customerId);
+    }
+  }, [customerId]);
+
+  // ─── Update local items when state changes ──────────────────────────────────
+  useEffect(() => {
+    setLocalItems(state.items);
+  }, [state.items]);
+
+  // ─── Update Quantity ─────────────────────────────────────────────────────────
+  // ─── Update Quantity ─────────────────────────────────────────────────────────
+// In app/(tabs)/cart.tsx, update the handleUpdateQty function
+
+const handleUpdateQty = useCallback(async (item: any, newQuantity: number) => {
+  if (!customerId) return;
+  try {
+    setSyncing(true);
+    console.log('📦 Updating quantity:', { item, newQuantity, customerId });
+    
+    if (newQuantity <= 0) {
+      // Remove item (will sync with backend)
+      await removeItem(item.id, customerId);
+      show('Item removed from cart');
+      setSyncing(false);
+      return;
+    }
+    
+    // Update quantity (will sync with backend)
+    await updateQty(item.id, newQuantity, item.productId, customerId);
+    
+    console.log('✅ Quantity updated successfully');
+  } catch (error) {
+    console.error('Failed to update quantity:', error);
+    show('Failed to update quantity', 'error');
+    // Revert by fetching cart again
+    await fetchCart(customerId);
+  } finally {
+    setSyncing(false);
+  }
+}, [customerId, removeItem, updateQty, show, fetchCart]);
+
+  // ─── Remove Item ─────────────────────────────────────────────────────────────
+  const handleRemoveItem = useCallback(async (item: any) => {
+    if (!customerId) return;
+    Alert.alert(
+      'Remove Item',
+      'Are you sure you want to remove this item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setSyncing(true);
+              await axios.delete(`${API_BASE_URL}/cart/item`, {
+                data: { customerId, productId: item.productId },
+              });
+              removeItem(item.id);
+              show('Item removed from cart');
+            } catch (error) {
+              console.error('Failed to remove item:', error);
+              show('Failed to remove item', 'error');
+            } finally {
+              setSyncing(false);
+            }
+          },
+        },
+      ]
+    );
+  }, [customerId, removeItem, show]);
+
+  // ─── Clear Cart ──────────────────────────────────────────────────────────────
+  const handleClearCart = useCallback(async () => {
+    if (!customerId) return;
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to clear your cart?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setSyncing(true);
+              await axios.delete(`${API_BASE_URL}/cart/${customerId}`);
+              clearCart();
+              show('Cart cleared');
+            } catch (error) {
+              console.error('Failed to clear cart:', error);
+              show('Failed to clear cart', 'error');
+            } finally {
+              setSyncing(false);
+            }
+          },
+        },
+      ]
+    );
+  }, [customerId, clearCart, show]);
+
+  // ─── Apply Coupon ────────────────────────────────────────────────────────────
+  const handleApplyCoupon = useCallback((code: string, discount: number, minOrder: number) => {
     if (subtotal < minOrder) {
       show(`Minimum order ₹${minOrder.toLocaleString('en-IN')} required`, 'error');
       return;
@@ -28,15 +146,74 @@ export default function CartScreen() {
     applyCoupon(code, discount);
     setShowCoupons(false);
     show('Coupon applied!');
-  };
+  }, [subtotal, applyCoupon, show]);
 
-  const handleMoveToWishlist = (id: string, productId: string) => {
-    toggle(productId);
-    removeItem(id);
-    show('Moved to wishlist');
-  };
+  // ─── Move to Wishlist ──────────────────────────────────────────────────────
+  const handleMoveToWishlist = useCallback(async (item: any) => {
+    if (!customerId) return;
+    try {
+      setSyncing(true);
+      toggle(item.productId);
+      await axios.delete(`${API_BASE_URL}/cart/item`, {
+        data: { customerId, productId: item.productId },
+      });
+      removeItem(item.id);
+      show('Moved to wishlist');
+    } catch (error) {
+      console.error('Failed to move to wishlist:', error);
+      show('Failed to move to wishlist', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  }, [customerId, toggle, removeItem, show]);
 
-  if (state.items.length === 0) {
+  // ─── Render item ─────────────────────────────────────────────────────────────
+  const renderItem = ({ item }: { item: any }) => (
+    <View style={styles.cartItem}>
+      <Image source={{ uri: item.image }} style={styles.itemImage} />
+      <View style={styles.itemBody}>
+        <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
+        <Text style={styles.itemPrice}>₹{item.price.toLocaleString('en-IN')}</Text>
+        <View style={styles.itemActions}>
+          <View style={styles.qtyRow}>
+            <TouchableOpacity 
+              style={styles.qtyBtn} 
+              onPress={() => handleUpdateQty(item, Math.max(0, item.quantity - 1))}
+              disabled={syncing}
+            >
+              <Minus color={COLORS.neutral[700]} size={16} />
+            </TouchableOpacity>
+            <Text style={styles.qtyText}>{item.quantity}</Text>
+            <TouchableOpacity 
+              style={styles.qtyBtn} 
+              onPress={() => handleUpdateQty(item, item.quantity + 1)}
+              disabled={syncing}
+            >
+              <Plus color={COLORS.neutral[700]} size={16} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.itemActionBtns}>
+            <TouchableOpacity 
+              style={styles.iconAction} 
+              onPress={() => handleMoveToWishlist(item)}
+              disabled={syncing}
+            >
+              <Heart color={COLORS.neutral[500]} size={16} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.iconAction} 
+              onPress={() => handleRemoveItem(item)}
+              disabled={syncing}
+            >
+              <Trash2 color={COLORS.error} size={16} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
+  if (state.items.length === 0 && !syncing) {
     return (
       <View style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
@@ -59,42 +236,29 @@ export default function CartScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Shopping Cart</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Shopping Cart</Text>
+          {state.items.length > 0 && (
+            <TouchableOpacity onPress={handleClearCart}>
+              <Text style={styles.clearText}>Clear All</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <Text style={styles.subtitle}>{totalItems} item{totalItems > 1 ? 's' : ''} in cart</Text>
       </View>
+
+      {syncing && (
+        <View style={styles.syncingContainer}>
+          <ActivityIndicator size="small" color={COLORS.primary[600]} />
+          <Text style={styles.syncingText}>Updating cart...</Text>
+        </View>
+      )}
 
       <FlatList
         data={state.items}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: SPACING.md, paddingBottom: 200 }}
-        renderItem={({ item }) => (
-          <View style={styles.cartItem}>
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
-            <View style={styles.itemBody}>
-              <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
-              <Text style={styles.itemPrice}>₹{item.price.toLocaleString('en-IN')}</Text>
-              <View style={styles.itemActions}>
-                <View style={styles.qtyRow}>
-                  <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQty(item.id, item.quantity - 1)}>
-                    <Minus color={COLORS.neutral[700]} size={16} />
-                  </TouchableOpacity>
-                  <Text style={styles.qtyText}>{item.quantity}</Text>
-                  <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQty(item.id, item.quantity + 1)}>
-                    <Plus color={COLORS.neutral[700]} size={16} />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.itemActionBtns}>
-                  <TouchableOpacity style={styles.iconAction} onPress={() => saveForLater(item.id)}>
-                    <Heart color={COLORS.neutral[500]} size={16} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconAction} onPress={() => removeItem(item.id)}>
-                    <Trash2 color={COLORS.error} size={16} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
         ListFooterComponent={
           <View style={styles.couponSection}>
@@ -147,7 +311,13 @@ export default function CartScreen() {
           <Text style={styles.totalLabel}>Grand Total</Text>
           <Text style={styles.totalValue}>₹{grandTotal.toLocaleString('en-IN')}</Text>
         </View>
-        <Button onPress={() => router.push('/checkout')} fullWidth size="lg" style={{ marginTop: SPACING.md }}>
+        <Button 
+          onPress={() => router.push('/checkout')} 
+          fullWidth 
+          size="lg" 
+          style={{ marginTop: SPACING.md }}
+          disabled={state.items.length === 0 || syncing}
+        >
           Proceed to Checkout
         </Button>
       </View>
@@ -167,7 +337,14 @@ export default function CartScreen() {
               data={coupons}
               keyExtractor={(c) => c.code}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.couponCard} onPress={() => handleApplyCoupon(item.code, item.type === 'percentage' ? Math.round(subtotal * item.discount / 100) : item.discount, item.minOrder)}>
+                <TouchableOpacity 
+                  style={styles.couponCard} 
+                  onPress={() => handleApplyCoupon(
+                    item.code, 
+                    item.type === 'percentage' ? Math.round(subtotal * item.discount / 100) : item.discount, 
+                    item.minOrder
+                  )}
+                >
                   <View style={styles.couponCardLeft}>
                     <Text style={styles.couponCardCode}>{item.code}</Text>
                     <Text style={styles.couponCardDesc}>{item.description}</Text>
@@ -190,8 +367,12 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.offWhite },
   header: { paddingHorizontal: SPACING.md, paddingBottom: SPACING.sm },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 28, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
   subtitle: { fontSize: 14, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 2 },
+  clearText: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.error },
+  syncingContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, gap: 8 },
+  syncingText: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500] },
   cartItem: { flexDirection: 'row', backgroundColor: COLORS.white, borderRadius: RADIUS.xl, padding: SPACING.md, marginBottom: SPACING.md, ...SHADOWS.small },
   itemImage: { width: 90, height: 90, borderRadius: RADIUS.lg, resizeMode: 'cover' },
   itemBody: { flex: 1, marginLeft: SPACING.md },

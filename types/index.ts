@@ -781,9 +781,11 @@ export type AddOn = {
   is_active?: boolean;
 };
 
+// types/index.ts
+// types/index.ts - Add to CartItem type
 export type CartItem = {
   id: string;
-  productId: string;
+  productId: string; // Make sure this exists
   name: string;
   image: string;
   price: number;
