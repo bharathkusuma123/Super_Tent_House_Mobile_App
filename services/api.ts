@@ -8638,7 +8638,7 @@ import { Product, Category, Package, AddOn, Coupon, Order, AppNotification, Addr
 
 // ─── Configuration ──────────────────────────────────────────────
 const USE_REAL_API = true;
-export const API_BASE_URL = 'https://database-webshots-plastics-mask.trycloudflare.com/api';
+export const API_BASE_URL = 'https://taking-inspections-erp-democrats.trycloudflare.com/api';
 
 // ─── Axios Instance ─────────────────────────────────────────────
 const apiClient = axios.create({
