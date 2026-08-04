@@ -8638,7 +8638,7 @@ import { Product, Category, Package, AddOn, Coupon, Order, AppNotification, Addr
 
 // ─── Configuration ──────────────────────────────────────────────
 const USE_REAL_API = true;
-export const API_BASE_URL = 'https://costs-beast-chorus-rays.trycloudflare.com/api';
+export const API_BASE_URL = 'https://problems-grants-attraction-surfing.trycloudflare.com/api';
 
 // ─── Axios Instance ─────────────────────────────────────────────
 const apiClient = axios.create({
