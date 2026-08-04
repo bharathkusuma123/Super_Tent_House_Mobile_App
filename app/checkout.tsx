@@ -1,20 +1,23 @@
-import { useState, useMemo } from 'react';
+// app/checkout.tsx
+import { useState, useMemo, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Modal, Dimensions,
+  TextInput, Modal, Dimensions, Alert, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { SlideInRight, FadeIn } from 'react-native-reanimated';
 import {
   ArrowLeft, Check, MapPin, Calendar, CreditCard, ShoppingBag,
   Smartphone, Wallet, Banknote, ChevronLeft, ChevronRight, Clock, X,
+  Home, Briefcase, Plus,
 } from 'lucide-react-native';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { useCart } from '@/store/cart';
 import { useToast } from '@/store/toast';
-import { sampleAddresses } from '@/mock/data';
+import { useAuth } from '@/store/auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { addressService, orderService, Address as AddressType, AddressInput, OrderInput } from '@/services/address';
 
 const { width } = Dimensions.get('window');
 
@@ -59,7 +62,6 @@ function CalendarModal({ visible, onClose, selected, onSelect, minDate }: Calend
     const total = daysInMonth(viewYear, viewMonth);
     const arr: (number | null)[] = Array(first).fill(null);
     for (let d = 1; d <= total; d++) arr.push(d);
-    // pad to full grid rows
     while (arr.length % 7 !== 0) arr.push(null);
     return arr;
   }, [viewYear, viewMonth]);
@@ -97,68 +99,58 @@ function CalendarModal({ visible, onClose, selected, onSelect, minDate }: Calend
     onClose();
   };
 
-  // prevent going back before current month
   const canGoPrev = !(viewYear === today.getFullYear() && viewMonth <= today.getMonth());
 
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
-      <View style={cm.overlay}>
+      <View style={cmStyles.overlay}>
         <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
-        <Animated.View entering={FadeIn.duration(200)} style={cm.sheet}>
-          {/* Handle */}
-          <View style={cm.handle} />
-
-          {/* Month navigation */}
-          <View style={cm.navRow}>
+        <Animated.View entering={FadeIn.duration(200)} style={cmStyles.sheet}>
+          <View style={cmStyles.handle} />
+          <View style={cmStyles.navRow}>
             <TouchableOpacity
               onPress={prevMonth}
-              style={[cm.navBtn, !canGoPrev && { opacity: 0.3 }]}
+              style={[cmStyles.navBtn, !canGoPrev && { opacity: 0.3 }]}
               disabled={!canGoPrev}
             >
               <ChevronLeft color={COLORS.primary[700]} size={22} />
             </TouchableOpacity>
-
-            <View style={cm.navCenter}>
-              <Text style={cm.monthText}>{MONTH_NAMES[viewMonth]}</Text>
-              <Text style={cm.yearText}>{viewYear}</Text>
+            <View style={cmStyles.navCenter}>
+              <Text style={cmStyles.monthText}>{MONTH_NAMES[viewMonth]}</Text>
+              <Text style={cmStyles.yearText}>{viewYear}</Text>
             </View>
-
-            <TouchableOpacity onPress={nextMonth} style={cm.navBtn}>
+            <TouchableOpacity onPress={nextMonth} style={cmStyles.navBtn}>
               <ChevronRight color={COLORS.primary[700]} size={22} />
             </TouchableOpacity>
           </View>
-
-          {/* Day-of-week header */}
-          <View style={cm.weekRow}>
+          <View style={cmStyles.weekRow}>
             {DAY_LABELS.map(d => (
-              <Text key={d} style={cm.weekLabel}>{d}</Text>
+              <Text key={d} style={cmStyles.weekLabel}>{d}</Text>
             ))}
           </View>
-
-          {/* Grid */}
-          <View style={cm.grid}>
+          <View style={cmStyles.grid}>
             {cells.map((day, idx) => {
-              if (day === null) return <View key={idx} style={cm.cell} />;
+              if (day === null) return <View key={idx} style={cmStyles.cell} />;
               const disabled = isDisabled(day);
               const sel = isSelected(day);
               const tod = isToday(day);
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={cm.cell}
+                  style={cmStyles.cell}
                   onPress={() => handleDay(day)}
                   activeOpacity={disabled ? 1 : 0.7}
                 >
                   <View style={[
-                    cm.dayInner,
-                    sel && cm.daySelected,
-                    !sel && tod && cm.dayToday,
+                    cmStyles.dayInner,
+                    sel && cmStyles.daySelected,
+                    !sel && tod && cmStyles.dayToday,
                   ]}>
                     <Text style={[
-                      cm.dayText,
-                      disabled && cm.dayDisabled,
-                      sel && cm.dayTextSelected,
-                      !sel && tod && cm.dayTextToday,
+                      cmStyles.dayText,
+                      disabled && cmStyles.dayDisabled,
+                      sel && cmStyles.dayTextSelected,
+                      !sel && tod && cmStyles.dayTextToday,
                     ]}>
                       {day}
                     </Text>
@@ -167,14 +159,12 @@ function CalendarModal({ visible, onClose, selected, onSelect, minDate }: Calend
               );
             })}
           </View>
-
-          {/* Selected label + confirm */}
-          <View style={cm.footer}>
-            <Text style={cm.footerLabel}>
+          <View style={cmStyles.footer}>
+            <Text style={cmStyles.footerLabel}>
               {selected ? formatDisplay(selected) : 'No date selected'}
             </Text>
-            <TouchableOpacity style={cm.confirmBtn} onPress={onClose}>
-              <Text style={cm.confirmText}>Confirm</Text>
+            <TouchableOpacity style={cmStyles.confirmBtn} onPress={onClose}>
+              <Text style={cmStyles.confirmText}>Confirm</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -185,35 +175,54 @@ function CalendarModal({ visible, onClose, selected, onSelect, minDate }: Calend
 
 const CELL = (width - SPACING.lg * 2 - SPACING.md * 2) / 7;
 
-const cm = StyleSheet.create({
+const cmStyles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(10,18,36,0.55)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: COLORS.white,
-    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    paddingHorizontal: SPACING.lg, paddingBottom: 36,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 36,
   },
   handle: {
-    width: 40, height: 4, borderRadius: 2,
-    backgroundColor: COLORS.neutral[300], alignSelf: 'center', marginTop: 12, marginBottom: 8,
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.neutral[300],
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
   navRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: SPACING.md,
   },
   navBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.primary[50], justifyContent: 'center', alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary[50],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   navCenter: { alignItems: 'center' },
   monthText: { fontSize: 18, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
   yearText: { fontSize: 13, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 1 },
   weekRow: {
-    flexDirection: 'row', borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100], paddingBottom: SPACING.sm, marginBottom: SPACING.sm,
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[100],
+    paddingBottom: SPACING.sm,
+    marginBottom: SPACING.sm,
   },
   weekLabel: {
-    width: CELL, textAlign: 'center',
-    fontSize: 12, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[400],
+    width: CELL,
+    textAlign: 'center',
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[400],
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: CELL, height: CELL + 6, alignItems: 'center', justifyContent: 'center' },
@@ -225,14 +234,20 @@ const cm = StyleSheet.create({
   dayTextToday: { color: COLORS.gold[600], fontFamily: 'Inter-Bold' },
   dayDisabled: { color: COLORS.neutral[300] },
   footer: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginTop: SPACING.md, paddingTop: SPACING.md,
-    borderTopWidth: 1, borderTopColor: COLORS.neutral[100],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.neutral[100],
   },
   footerLabel: { fontSize: 15, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[700] },
   confirmBtn: {
-    backgroundColor: COLORS.primary[700], paddingHorizontal: SPACING.xl,
-    paddingVertical: 12, borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.primary[700],
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 12,
+    borderRadius: RADIUS.xl,
   },
   confirmText: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.white },
 });
@@ -276,64 +291,61 @@ function TimePickerModal({ visible, onClose, hour, minute, meridiem, onChange }:
 
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
-      <View style={tp.overlay}>
+      <View style={tpStyles.overlay}>
         <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
-        <Animated.View entering={FadeIn.duration(200)} style={tp.sheet}>
-          <View style={tp.handle} />
-          <View style={tp.headerRow}>
-            <Text style={tp.title}>Select Time</Text>
+        <Animated.View entering={FadeIn.duration(200)} style={tpStyles.sheet}>
+          <View style={tpStyles.handle} />
+          <View style={tpStyles.headerRow}>
+            <Text style={tpStyles.title}>Select Time</Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <X color={COLORS.neutral[500]} size={22} />
             </TouchableOpacity>
           </View>
 
-          <View style={tp.pickerRow}>
-            {/* Hour */}
-            <View style={tp.spinnerCol}>
-              <TouchableOpacity style={tp.arrowBtn} onPress={() => adjustH(1)}>
+          <View style={tpStyles.pickerRow}>
+            <View style={tpStyles.spinnerCol}>
+              <TouchableOpacity style={tpStyles.arrowBtn} onPress={() => adjustH(1)}>
                 <ChevronLeft color={COLORS.primary[700]} size={22} style={{ transform: [{ rotate: '90deg' }] }} />
               </TouchableOpacity>
-              <View style={tp.valueBox}>
-                <Text style={tp.valueText}>{pad(h)}</Text>
+              <View style={tpStyles.valueBox}>
+                <Text style={tpStyles.valueText}>{pad(h)}</Text>
               </View>
-              <TouchableOpacity style={tp.arrowBtn} onPress={() => adjustH(-1)}>
+              <TouchableOpacity style={tpStyles.arrowBtn} onPress={() => adjustH(-1)}>
                 <ChevronLeft color={COLORS.primary[700]} size={22} style={{ transform: [{ rotate: '-90deg' }] }} />
               </TouchableOpacity>
-              <Text style={tp.unitLabel}>Hour</Text>
+              <Text style={tpStyles.unitLabel}>Hour</Text>
             </View>
 
-            <Text style={tp.colon}>:</Text>
+            <Text style={tpStyles.colon}>:</Text>
 
-            {/* Minute */}
-            <View style={tp.spinnerCol}>
-              <TouchableOpacity style={tp.arrowBtn} onPress={() => adjustM(5)}>
+            <View style={tpStyles.spinnerCol}>
+              <TouchableOpacity style={tpStyles.arrowBtn} onPress={() => adjustM(5)}>
                 <ChevronLeft color={COLORS.primary[700]} size={22} style={{ transform: [{ rotate: '90deg' }] }} />
               </TouchableOpacity>
-              <View style={tp.valueBox}>
-                <Text style={tp.valueText}>{pad(m)}</Text>
+              <View style={tpStyles.valueBox}>
+                <Text style={tpStyles.valueText}>{pad(m)}</Text>
               </View>
-              <TouchableOpacity style={tp.arrowBtn} onPress={() => adjustM(-5)}>
+              <TouchableOpacity style={tpStyles.arrowBtn} onPress={() => adjustM(-5)}>
                 <ChevronLeft color={COLORS.primary[700]} size={22} style={{ transform: [{ rotate: '-90deg' }] }} />
               </TouchableOpacity>
-              <Text style={tp.unitLabel}>Min</Text>
+              <Text style={tpStyles.unitLabel}>Min</Text>
             </View>
 
-            {/* AM / PM */}
-            <View style={tp.meridiemCol}>
+            <View style={tpStyles.meridiemCol}>
               {(['AM', 'PM'] as const).map(v => (
                 <TouchableOpacity
                   key={v}
-                  style={[tp.meridiemBtn, mer === v && tp.meridiemActive]}
+                  style={[tpStyles.meridiemBtn, mer === v && tpStyles.meridiemActive]}
                   onPress={() => setMer(v)}
                 >
-                  <Text style={[tp.meridiemText, mer === v && tp.meridiemTextActive]}>{v}</Text>
+                  <Text style={[tpStyles.meridiemText, mer === v && tpStyles.meridiemTextActive]}>{v}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          <TouchableOpacity style={tp.confirmBtn} onPress={confirm}>
-            <Text style={tp.confirmText}>Set Time</Text>
+          <TouchableOpacity style={tpStyles.confirmBtn} onPress={confirm}>
+            <Text style={tpStyles.confirmText}>Set Time</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -341,34 +353,54 @@ function TimePickerModal({ visible, onClose, hour, minute, meridiem, onChange }:
   );
 }
 
-const tp = StyleSheet.create({
+const tpStyles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(10,18,36,0.55)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: COLORS.white,
-    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    paddingHorizontal: SPACING.lg, paddingBottom: 36,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 36,
   },
   handle: {
-    width: 40, height: 4, borderRadius: 2,
-    backgroundColor: COLORS.neutral[300], alignSelf: 'center', marginTop: 12, marginBottom: 4,
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.neutral[300],
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 4,
   },
   headerRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: SPACING.md,
   },
   title: { fontSize: 18, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
   pickerRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: SPACING.md, paddingVertical: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
+    paddingVertical: SPACING.lg,
   },
   spinnerCol: { alignItems: 'center', gap: SPACING.sm },
   arrowBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: COLORS.primary[50], justifyContent: 'center', alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary[50],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   valueBox: {
-    width: 72, height: 72, borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.primary[700], justifyContent: 'center', alignItems: 'center',
+    width: 72,
+    height: 72,
+    borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.primary[700],
+    justifyContent: 'center',
+    alignItems: 'center',
     ...SHADOWS.medium,
   },
   valueText: { fontSize: 28, fontFamily: 'Inter-Bold', color: COLORS.white },
@@ -376,17 +408,289 @@ const tp = StyleSheet.create({
   colon: { fontSize: 32, fontFamily: 'Inter-Bold', color: COLORS.neutral[400], marginBottom: 20 },
   meridiemCol: { gap: SPACING.sm, marginLeft: SPACING.sm },
   meridiemBtn: {
-    width: 60, paddingVertical: 14, borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.neutral[100], alignItems: 'center',
+    width: 60,
+    paddingVertical: 14,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.neutral[100],
+    alignItems: 'center',
   },
   meridiemActive: { backgroundColor: COLORS.primary[700] },
   meridiemText: { fontSize: 15, fontFamily: 'Inter-Bold', color: COLORS.neutral[500] },
   meridiemTextActive: { color: COLORS.white },
   confirmBtn: {
-    backgroundColor: COLORS.primary[700], paddingVertical: 14,
-    borderRadius: RADIUS.xl, alignItems: 'center', marginTop: SPACING.sm,
+    backgroundColor: COLORS.primary[700],
+    paddingVertical: 14,
+    borderRadius: RADIUS.xl,
+    alignItems: 'center',
+    marginTop: SPACING.sm,
   },
   confirmText: { fontSize: 15, fontFamily: 'Inter-SemiBold', color: COLORS.white },
+});
+
+// ─── Add Address Modal ───────────────────────────────────────────────────────
+type AddAddressModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (address: Omit<AddressType, 'id' | 'customerId'>) => void;
+};
+
+function AddAddressModal({ visible, onClose, onSave }: AddAddressModalProps) {
+  const [label, setLabel] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [line1, setLine1] = useState('');
+  const [line2, setLine2] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [type, setType] = useState<'home' | 'office' | 'other'>('home');
+
+  const handleSave = () => {
+    if (!label || !fullName || !phone || !line1 || !city || !state || !pincode) {
+      Alert.alert('Error', 'Please fill all required fields');
+      return;
+    }
+
+    onSave({
+      label,
+      fullName,
+      phone,
+      line1,
+      line2,
+      city,
+      state,
+      pincode,
+      country: 'India',
+      type,
+      isDefault: false,
+    });
+
+    setLabel('');
+    setFullName('');
+    setPhone('');
+    setLine1('');
+    setLine2('');
+    setCity('');
+    setState('');
+    setPincode('');
+    setType('home');
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
+      <View style={amStyles.overlay}>
+        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+        <Animated.View entering={FadeIn.duration(200)} style={amStyles.sheet}>
+          <View style={amStyles.handle} />
+          <View style={amStyles.header}>
+            <Text style={amStyles.title}>Add New Address</Text>
+            <TouchableOpacity onPress={onClose}>
+              <X color={COLORS.neutral[500]} size={22} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false} style={amStyles.form}>
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Address Type</Text>
+              <View style={amStyles.typeRow}>
+                {[
+                  { key: 'home', label: 'Home', icon: Home },
+                  { key: 'office', label: 'Office', icon: Briefcase },
+                  { key: 'other', label: 'Other', icon: MapPin },
+                ].map(({ key, label: typeLabel, icon: Icon }) => (
+                  <TouchableOpacity
+                    key={key}
+                    style={[amStyles.typeBtn, type === key && amStyles.typeBtnActive]}
+                    onPress={() => setType(key as any)}
+                  >
+                    <Icon size={20} color={type === key ? COLORS.white : COLORS.neutral[600]} />
+                    <Text style={[amStyles.typeText, type === key && amStyles.typeTextActive]}>
+                      {typeLabel}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Address Label <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="e.g., Home, Office"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={label}
+                onChangeText={setLabel}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Full Name <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Enter full name"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={fullName}
+                onChangeText={setFullName}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Phone Number <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Enter phone number"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Address Line 1 <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Street address"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={line1}
+                onChangeText={setLine1}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Address Line 2 (Optional)</Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Apartment, suite, etc."
+                placeholderTextColor={COLORS.neutral[400]}
+                value={line2}
+                onChangeText={setLine2}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>City <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Enter city"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={city}
+                onChangeText={setCity}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>State <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Enter state"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={state}
+                onChangeText={setState}
+              />
+            </View>
+
+            <View style={amStyles.formGroup}>
+              <Text style={amStyles.formLabel}>Pincode <Text style={amStyles.required}>*</Text></Text>
+              <TextInput
+                style={amStyles.input}
+                placeholder="Enter pincode"
+                placeholderTextColor={COLORS.neutral[400]}
+                value={pincode}
+                onChangeText={setPincode}
+                keyboardType="number-pad"
+              />
+            </View>
+
+            <TouchableOpacity style={amStyles.saveBtn} onPress={handleSave}>
+              <Text style={amStyles.saveBtnText}>Save Address</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const amStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(10,18,36,0.55)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 36,
+    maxHeight: '90%',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.neutral[300],
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+  },
+  title: { fontSize: 20, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
+  form: { paddingBottom: SPACING.xl },
+  formGroup: { marginBottom: SPACING.md },
+  formLabel: { fontSize: 13, fontFamily: 'Inter-Medium', color: COLORS.neutral[700], marginBottom: 6 },
+  required: { color: COLORS.error },
+  input: {
+    backgroundColor: COLORS.neutral[50],
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[900],
+    borderWidth: 1,
+    borderColor: COLORS.neutral[200],
+  },
+  typeRow: { flexDirection: 'row', gap: 10 },
+  typeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.neutral[100],
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  typeBtnActive: {
+    backgroundColor: COLORS.primary[700],
+    borderColor: COLORS.primary[700],
+  },
+  typeText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[600],
+  },
+  typeTextActive: {
+    color: COLORS.white,
+  },
+  saveBtn: {
+    backgroundColor: COLORS.primary[700],
+    paddingVertical: 14,
+    borderRadius: RADIUS.xl,
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  saveBtnText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.white,
+  },
 });
 
 // ─── Main checkout screen ─────────────────────────────────────────────────────
@@ -396,16 +700,18 @@ export default function CheckoutScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { state, subtotal, deliveryCharge, gst, grandTotal, clearCart } = useCart();
+  const { state: authState } = useAuth();
   const { show } = useToast();
 
   const [step, setStep] = useState(0);
   const [selectedAddr, setSelectedAddr] = useState(0);
+  const [addresses, setAddresses] = useState<AddressType[]>([]);
+  const [showAddAddress, setShowAddAddress] = useState(false);
+  const [loadingAddress, setLoadingAddress] = useState(true);
 
-  // Date picker state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCal, setShowCal] = useState(false);
 
-  // Time picker state
   const [timeHour, setTimeHour] = useState(6);
   const [timeMin, setTimeMin] = useState(0);
   const [timeMer, setTimeMer] = useState<'AM' | 'PM'>('PM');
@@ -418,6 +724,7 @@ export default function CheckoutScreen() {
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [processing, setProcessing] = useState(false);
 
+  const customerId = authState.user?.id;
   const eventDateDisplay = selectedDate ? formatDisplay(selectedDate) : '';
   const eventTimeDisplay = `${pad(timeHour)}:${pad(timeMin)} ${timeMer}`;
 
@@ -429,7 +736,247 @@ export default function CheckoutScreen() {
     { key: 'cod',    label: 'Cash on Confirmation', icon: Banknote,    desc: 'Pay after booking' },
   ];
 
+  // ─── Load addresses from database ───────────────────────────────────────────
+  useEffect(() => {
+    const loadAddresses = async () => {
+      if (!customerId) {
+        setAddresses([]);
+        setLoadingAddress(false);
+        return;
+      }
+
+      try {
+        console.log('📦 Loading addresses from database for customer:', customerId);
+        const loadedAddresses = await addressService.getAddresses(customerId);
+        
+        const formattedAddresses = loadedAddresses.map(addr => ({
+          ...addr,
+          id: String(addr.id),
+          customerId: String(addr.customerId),
+        }));
+        
+        setAddresses(formattedAddresses);
+        
+        const defaultIndex = formattedAddresses.findIndex(addr => addr.isDefault);
+        setSelectedAddr(defaultIndex !== -1 ? defaultIndex : 0);
+        
+        console.log('✅ Addresses loaded:', formattedAddresses.length);
+      } catch (error) {
+        console.error('❌ Failed to load addresses:', error);
+      } finally {
+        setLoadingAddress(false);
+      }
+    };
+
+    loadAddresses();
+  }, [customerId]);
+
+  // ─── Add new address - Save to database ─────────────────────────────────────
+  const addAddress = async (newAddress: Omit<AddressType, 'id' | 'customerId'>) => {
+    if (!customerId) {
+      show('Please login to save address', 'error');
+      return;
+    }
+
+    try {
+      console.log('📦 Saving address to database:', newAddress);
+      
+      const addressInput: AddressInput = {
+        label: newAddress.label,
+        fullName: newAddress.fullName,
+        phone: newAddress.phone,
+        line1: newAddress.line1,
+        line2: newAddress.line2 || '',
+        city: newAddress.city,
+        state: newAddress.state,
+        pincode: newAddress.pincode,
+        country: newAddress.country || 'India',
+        type: newAddress.type || 'other',
+        isDefault: addresses.length === 0,
+      };
+
+      const savedAddress = await addressService.addAddress(customerId, addressInput);
+      
+      if (savedAddress) {
+        const updatedAddresses = await addressService.getAddresses(customerId);
+        const formattedAddresses = updatedAddresses.map(addr => ({
+          ...addr,
+          id: String(addr.id),
+          customerId: String(addr.customerId),
+        }));
+        
+        setAddresses(formattedAddresses);
+        setSelectedAddr(formattedAddresses.length - 1);
+        show('Address saved successfully!');
+      } else {
+        show('Failed to save address', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Failed to save address:', error);
+      show('Failed to save address', 'error');
+    }
+  };
+
+  // ─── Delete address - Remove from database ──────────────────────────────────
+  const deleteAddress = (index: number) => {
+    const address = addresses[index];
+    if (!address) return;
+
+    Alert.alert(
+      'Delete Address',
+      'Are you sure you want to delete this address?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const success = await addressService.deleteAddress(address.id);
+              if (success) {
+                const newAddresses = addresses.filter((_, i) => i !== index);
+                setAddresses(newAddresses);
+                if (selectedAddr >= newAddresses.length) {
+                  setSelectedAddr(Math.max(0, newAddresses.length - 1));
+                }
+                show('Address deleted');
+              } else {
+                show('Failed to delete address', 'error');
+              }
+            } catch (error) {
+              console.error('Failed to delete address:', error);
+              show('Failed to delete address', 'error');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // ─── Set default address - Update in database ───────────────────────────────
+  const setDefaultAddress = async (index: number) => {
+    const address = addresses[index];
+    if (!address) return;
+
+    try {
+      const success = await addressService.setDefaultAddress(address.id);
+      if (success) {
+        const updatedAddresses = addresses.map((addr, i) => ({
+          ...addr,
+          isDefault: i === index,
+        }));
+        setAddresses(updatedAddresses);
+        show('Default address updated');
+      } else {
+        show('Failed to set default address', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to set default address:', error);
+      show('Failed to set default address', 'error');
+    }
+  };
+
+  // ─── Get icon for address type ─────────────────────────────────────────────
+  const getAddressIcon = (type: string) => {
+    switch (type) {
+      case 'home': return Home;
+      case 'office': return Briefcase;
+      default: return MapPin;
+    }
+  };
+
+  // ─── Get color for address type ────────────────────────────────────────────
+  const getAddressColor = (type: string) => {
+    switch (type) {
+      case 'home': return '#4CAF50';
+      case 'office': return '#2196F3';
+      default: return '#9E9E9E';
+    }
+  };
+
+  // ─── Create Order ──────────────────────────────────────────────────────────────
+  const createOrder = async () => {
+    if (!customerId) {
+      show('Please login to place order', 'error');
+      return;
+    }
+
+    const selectedAddress = addresses[selectedAddr];
+    if (!selectedAddress) {
+      show('Please select an address', 'error');
+      return;
+    }
+
+    try {
+      setProcessing(true);
+
+      const orderData: OrderInput = {
+        customerId: customerId,
+        customerName: authState.user?.name || '',
+        customerEmail: authState.user?.email || '',
+        customerPhone: authState.user?.phone || '',
+        address: {
+          id: selectedAddress.id,
+          label: selectedAddress.label,
+          fullName: selectedAddress.fullName,
+          phone: selectedAddress.phone,
+          line1: selectedAddress.line1,
+          line2: selectedAddress.line2 || '',
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          pincode: selectedAddress.pincode,
+          country: selectedAddress.country || 'India',
+        },
+        eventDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+        eventTime: eventTimeDisplay,
+        eventType: eventType,
+        venue: venue,
+        guestCount: parseInt(guestCount) || 0,
+        specialInstructions: instructions,
+        items: state.items.map(item => ({
+          id: item.id,
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        subtotal: subtotal,
+        deliveryCharge: deliveryCharge,
+        gst: gst,
+        couponDiscount: state.couponDiscount || 0,
+        couponCode: state.appliedCoupon || undefined,
+        grandTotal: grandTotal,
+        paymentMethod: paymentMethod,
+        notes: '',
+      };
+
+      console.log('📦 Creating order with data:', orderData);
+
+      const result = await orderService.createOrder(orderData);
+
+      if (result) {
+        console.log('✅ Order created:', result);
+        clearCart();
+        router.replace('/order-success');
+        show('Order placed successfully! 🎉');
+      } else {
+        show('Failed to place order', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Failed to create order:', error);
+      show('Failed to place order', 'error');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // ─── Handle Next ──────────────────────────────────────────────────────────────
   const handleNext = () => {
+    if (step === 0 && addresses.length === 0) {
+      show('Please add an address to continue', 'error');
+      return;
+    }
     if (step === 1) {
       if (!selectedDate || !venue || !guestCount) {
         show('Please fill all event details', 'error');
@@ -439,18 +986,23 @@ export default function CheckoutScreen() {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      setProcessing(true);
-      setTimeout(() => {
-        setProcessing(false);
-        clearCart();
-        router.replace('/order-success');
-      }, 2000);
+      createOrder();
     }
   };
 
+  if (loadingAddress) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary[600]} />
+        <Text style={{ marginTop: 16, color: COLORS.neutral[500], fontFamily: 'Inter-Regular' }}>
+          Loading your addresses...
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
           style={styles.backBtn}
@@ -462,7 +1014,6 @@ export default function CheckoutScreen() {
         <View style={{ width: 44 }} />
       </View>
 
-      {/* Step indicator */}
       <View style={styles.stepsRow}>
         {steps.map((s, i) => (
           <View key={s} style={styles.stepItem}>
@@ -484,35 +1035,77 @@ export default function CheckoutScreen() {
         {/* ── Step 0: Address ── */}
         {step === 0 && (
           <Animated.View entering={SlideInRight} style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Shipping Address</Text>
-            {sampleAddresses.map((addr, i) => (
+            <View style={styles.addressHeader}>
+              <Text style={styles.stepTitle}>Shipping Address</Text>
               <TouchableOpacity
-                key={addr.id}
-                style={[styles.addressCard, selectedAddr === i && styles.addressCardActive]}
-                onPress={() => setSelectedAddr(i)}
+                style={styles.addBtn}
+                onPress={() => setShowAddAddress(true)}
               >
-                <View style={styles.addressRadio}>
-                  {selectedAddr === i && <View style={styles.addressRadioDot} />}
-                </View>
-                <View style={styles.addressBody}>
-                  <View style={styles.addressHeader}>
-                    <Text style={styles.addressLabel}>{addr.label}</Text>
-                    {addr.isDefault && (
-                      <View style={styles.defaultBadge}>
-                        <Text style={styles.defaultText}>DEFAULT</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.addressName}>{addr.fullName} • {addr.phone}</Text>
-                  <Text style={styles.addressText}>
-                    {addr.line1}, {addr.line2}, {addr.city}, {addr.state} - {addr.pincode}
-                  </Text>
-                </View>
+                <Plus color={COLORS.white} size={20} />
+                <Text style={styles.addBtnText}>Add</Text>
               </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.addAddrBtn} onPress={() => router.push('/addresses')}>
-              <Text style={styles.addAddrText}>+ Add New Address</Text>
-            </TouchableOpacity>
+            </View>
+
+            {addresses.length === 0 ? (
+              <View style={styles.noAddressContainer}>
+                <MapPin color={COLORS.neutral[400]} size={48} />
+                <Text style={styles.noAddressText}>No addresses saved</Text>
+                <Text style={styles.noAddressSubtext}>Tap "Add" to add your address</Text>
+              </View>
+            ) : (
+              addresses.map((addr, i) => {
+                const Icon = getAddressIcon(addr.type);
+                const color = getAddressColor(addr.type);
+                return (
+                  <TouchableOpacity
+                    key={addr.id}
+                    style={[styles.addressCard, selectedAddr === i && styles.addressCardActive]}
+                    onPress={() => setSelectedAddr(i)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.addressRadio}>
+                      {selectedAddr === i && <View style={styles.addressRadioDot} />}
+                    </View>
+                    <View style={styles.addressBody}>
+                      <View style={styles.addressHeader}>
+                        <View style={[styles.addressTypeBadge, { backgroundColor: color + '20' }]}>
+                          <Icon size={14} color={color} />
+                          <Text style={[styles.addressTypeText, { color }]}>
+                            {addr.type.charAt(0).toUpperCase() + addr.type.slice(1)}
+                          </Text>
+                        </View>
+                        <Text style={styles.addressLabel}>{addr.label}</Text>
+                        {addr.isDefault && (
+                          <View style={styles.defaultBadge}>
+                            <Text style={styles.defaultText}>DEFAULT</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.addressName}>{addr.fullName} • {addr.phone}</Text>
+                      <Text style={styles.addressText}>
+                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                      </Text>
+                      <View style={styles.addressActions}>
+                        <TouchableOpacity
+                          style={styles.addressActionBtn}
+                          onPress={() => setDefaultAddress(i)}
+                        >
+                          <Check size={14} color={COLORS.primary[600]} />
+                          <Text style={styles.addressActionText}>Set Default</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.addressActionBtn, styles.addressActionDelete]}
+                          onPress={() => deleteAddress(i)}
+                        >
+                          <X size={14} color={COLORS.error} />
+                          <Text style={[styles.addressActionText, { color: COLORS.error }]}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </Animated.View>
         )}
 
@@ -521,7 +1114,6 @@ export default function CheckoutScreen() {
           <Animated.View entering={SlideInRight} style={styles.stepContent}>
             <Text style={styles.stepTitle}>Event Details</Text>
 
-            {/* Event Date */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Event Date <Text style={styles.required}>*</Text></Text>
               <TouchableOpacity
@@ -545,7 +1137,6 @@ export default function CheckoutScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Event Time */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Event Time</Text>
               <TouchableOpacity
@@ -561,7 +1152,6 @@ export default function CheckoutScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Event Type */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Event Type</Text>
               <View style={styles.chipRow}>
@@ -577,7 +1167,6 @@ export default function CheckoutScreen() {
               </View>
             </View>
 
-            {/* Venue */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Venue Address <Text style={styles.required}>*</Text></Text>
               <View style={styles.formInput}>
@@ -593,7 +1182,6 @@ export default function CheckoutScreen() {
               </View>
             </View>
 
-            {/* Guest Count */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Guest Count <Text style={styles.required}>*</Text></Text>
               <View style={styles.formInput}>
@@ -609,7 +1197,6 @@ export default function CheckoutScreen() {
               </View>
             </View>
 
-            {/* Special Instructions */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>Special Instructions</Text>
               <View style={[styles.formInput, { height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
@@ -649,7 +1236,6 @@ export default function CheckoutScreen() {
             <Row label="Delivery" value={deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`} />
             <Row label="GST (18%)" value={`₹${gst.toLocaleString('en-IN')}`} />
 
-            {/* Event info pill */}
             {selectedDate && (
               <View style={styles.eventPill}>
                 <Calendar color={COLORS.primary[600]} size={16} />
@@ -701,7 +1287,6 @@ export default function CheckoutScreen() {
         )}
       </ScrollView>
 
-      {/* Bottom bar */}
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.bottomTotalLabel}>Total</Text>
@@ -718,7 +1303,6 @@ export default function CheckoutScreen() {
         </Button>
       </View>
 
-      {/* Pickers */}
       <CalendarModal
         visible={showCal}
         onClose={() => setShowCal(false)}
@@ -732,6 +1316,11 @@ export default function CheckoutScreen() {
         minute={timeMin}
         meridiem={timeMer}
         onChange={(h, m, mer) => { setTimeHour(h); setTimeMin(m); setTimeMer(mer); }}
+      />
+      <AddAddressModal
+        visible={showAddAddress}
+        onClose={() => setShowAddAddress(false)}
+        onSave={addAddress}
       />
     </View>
   );
@@ -750,112 +1339,427 @@ function Row({ label, value, green }: { label: string; value: string; green?: bo
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.offWhite },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING.md, paddingBottom: SPACING.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.sm,
   },
   backBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: COLORS.white, justifyContent: 'center', alignItems: 'center', ...SHADOWS.small,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...SHADOWS.small,
   },
   title: { fontSize: 20, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
-
-  stepsRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md },
+  stepsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
   stepItem: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  stepCircle: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.neutral[200], justifyContent: 'center', alignItems: 'center' },
+  stepCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.neutral[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   stepCircleActive: { backgroundColor: COLORS.primary[700] },
   stepNum: { fontSize: 12, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[500] },
   stepNumActive: { color: COLORS.white },
-  stepLabel: { fontSize: 11, fontFamily: 'Inter-Medium', color: COLORS.neutral[400], marginLeft: 6 },
-  stepLabelActive: { color: COLORS.neutral[800] },
-  stepLine: { flex: 1, height: 2, backgroundColor: COLORS.neutral[200], marginHorizontal: 4 },
-  stepLineActive: { backgroundColor: COLORS.primary[700] },
-
-  stepContent: { padding: SPACING.lg },
-  stepTitle: { fontSize: 20, fontFamily: 'Inter-Bold', color: COLORS.neutral[900], marginBottom: SPACING.md },
-
-  // Address
-  addressCard: { flexDirection: 'row', backgroundColor: COLORS.white, borderRadius: RADIUS.xl, padding: SPACING.md, marginBottom: SPACING.md, borderWidth: 2, borderColor: 'transparent', ...SHADOWS.small },
-  addressCardActive: { borderColor: COLORS.primary[600] },
-  addressRadio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.neutral[300], justifyContent: 'center', alignItems: 'center', marginRight: SPACING.md, marginTop: 2 },
-  addressRadioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: COLORS.primary[700] },
-  addressBody: { flex: 1 },
-  addressHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  addressLabel: { fontSize: 14, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
-  defaultBadge: { backgroundColor: COLORS.gold[100], paddingHorizontal: 6, paddingVertical: 2, borderRadius: RADIUS.sm },
-  defaultText: { fontSize: 9, fontFamily: 'Inter-Bold', color: COLORS.gold[600] },
-  addressName: { fontSize: 13, fontFamily: 'Inter-Medium', color: COLORS.neutral[700], marginTop: 4 },
-  addressText: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 2, lineHeight: 16 },
-  addAddrBtn: { paddingVertical: SPACING.md, borderRadius: RADIUS.lg, borderWidth: 1.5, borderColor: COLORS.primary[300], borderStyle: 'dashed', alignItems: 'center' },
-  addAddrText: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.primary[700] },
-
-  // Event form
-  formGroup: { marginBottom: SPACING.md },
-  formLabel: { fontSize: 13, fontFamily: 'Inter-Medium', color: COLORS.neutral[700], marginBottom: 8 },
-  required: { color: COLORS.error },
-  // tappable picker fields
-  pickerField: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: COLORS.white, borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.md, paddingVertical: 14,
-    borderWidth: 1.5, borderColor: COLORS.neutral[200], ...SHADOWS.small,
+  stepLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[400],
+    marginLeft: 6,
   },
-  pickerFieldFilled: { borderColor: COLORS.primary[400], backgroundColor: COLORS.primary[50] },
+  stepLabelActive: { color: COLORS.neutral[800] },
+  stepLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: COLORS.neutral[200],
+    marginHorizontal: 4,
+  },
+  stepLineActive: { backgroundColor: COLORS.primary[700] },
+  stepContent: { padding: SPACING.lg },
+  stepTitle: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+    marginBottom: SPACING.md,
+  },
+  addressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.primary[700],
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 8,
+    borderRadius: RADIUS.lg,
+  },
+  addBtnText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+  },
+  addressCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    ...SHADOWS.small,
+  },
+  addressCardActive: { borderColor: COLORS.primary[600] },
+  addressRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: COLORS.neutral[300],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+    marginTop: 2,
+  },
+  addressRadioDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.primary[700],
+  },
+  addressBody: { flex: 1 },
+  addressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  addressTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+  },
+  addressTypeText: {
+    fontSize: 10,
+    fontFamily: 'Inter-SemiBold',
+  },
+  addressLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.gold[100],
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+  },
+  defaultText: {
+    fontSize: 9,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.gold[600],
+  },
+  addressName: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[700],
+    marginTop: 4,
+  },
+  addressText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  addressActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    marginTop: 6,
+  },
+  addressActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+  },
+  addressActionDelete: {
+    marginLeft: 'auto',
+  },
+  addressActionText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.primary[600],
+  },
+  noAddressContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    ...SHADOWS.small,
+  },
+  noAddressText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[700],
+    marginTop: SPACING.md,
+  },
+  noAddressSubtext: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[400],
+    marginTop: 4,
+  },
+  formGroup: { marginBottom: SPACING.md },
+  formLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[700],
+    marginBottom: 8,
+  },
+  required: { color: COLORS.error },
+  pickerField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 14,
+    borderWidth: 1.5,
+    borderColor: COLORS.neutral[200],
+    ...SHADOWS.small,
+  },
+  pickerFieldFilled: {
+    borderColor: COLORS.primary[400],
+    backgroundColor: COLORS.primary[50],
+  },
   pickerIcon: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: COLORS.primary[50], justifyContent: 'center', alignItems: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.primary[50],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pickerIconFilled: { backgroundColor: COLORS.primary[700] },
-  pickerText: { flex: 1, fontSize: 15, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[900] },
-  pickerPlaceholder: { fontFamily: 'Inter-Regular', color: COLORS.neutral[400] },
-  // regular input
-  formInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, borderRadius: RADIUS.lg, paddingHorizontal: SPACING.md, height: 52, borderWidth: 1, borderColor: COLORS.neutral[200], gap: 10 },
-  formInputText: { flex: 1, fontSize: 15, fontFamily: 'Inter-Regular', color: COLORS.neutral[900] },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: RADIUS.lg, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.neutral[200] },
-  chipActive: { backgroundColor: COLORS.primary[700], borderColor: COLORS.primary[700] },
-  chipText: { fontSize: 13, fontFamily: 'Inter-Medium', color: COLORS.neutral[700] },
-  chipTextActive: { color: COLORS.white },
-
-  // Summary
-  summaryItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: SPACING.sm, borderBottomWidth: 1, borderBottomColor: COLORS.neutral[100] },
-  summaryItemInfo: { flex: 1 },
-  summaryItemName: { fontSize: 14, fontFamily: 'Inter-Medium', color: COLORS.neutral[900] },
-  summaryItemQty: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 2 },
-  summaryItemPrice: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[900] },
-  summaryDivider: { height: 1, backgroundColor: COLORS.neutral[200], marginVertical: SPACING.md },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 4 },
-  summaryLabel: { fontSize: 14, fontFamily: 'Inter-Regular', color: COLORS.neutral[600] },
-  summaryValue: { fontSize: 14, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[900] },
-  totalLabel: { fontSize: 18, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
-  totalValue: { fontSize: 20, fontFamily: 'Inter-Bold', color: COLORS.primary[700] },
-  eventPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: COLORS.primary[50], borderRadius: RADIUS.lg, padding: SPACING.md, marginTop: SPACING.sm,
+  pickerText: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900],
   },
-  eventPillText: { fontSize: 13, fontFamily: 'Inter-Medium', color: COLORS.primary[700], flex: 1 },
-
-  // Payment
-  paymentCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, borderRadius: RADIUS.xl, padding: SPACING.md, marginBottom: SPACING.md, borderWidth: 2, borderColor: 'transparent', ...SHADOWS.small },
+  pickerPlaceholder: {
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[400],
+  },
+  formInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    height: 52,
+    borderWidth: 1,
+    borderColor: COLORS.neutral[200],
+    gap: 10,
+  },
+  formInputText: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[900],
+  },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.neutral[200],
+  },
+  chipActive: {
+    backgroundColor: COLORS.primary[700],
+    borderColor: COLORS.primary[700],
+  },
+  chipText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[700],
+  },
+  chipTextActive: { color: COLORS.white },
+  summaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[100],
+  },
+  summaryItemInfo: { flex: 1 },
+  summaryItemName: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[900],
+  },
+  summaryItemQty: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    marginTop: 2,
+  },
+  summaryItemPrice: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900],
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: COLORS.neutral[200],
+    marginVertical: SPACING.md,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 4,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[600],
+  },
+  summaryValue: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900],
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+  },
+  totalValue: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.primary[700],
+  },
+  eventPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary[50],
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  eventPillText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.primary[700],
+    flex: 1,
+  },
+  paymentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    ...SHADOWS.small,
+  },
   paymentCardActive: { borderColor: COLORS.primary[600] },
-  paymentIconWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.primary[50], justifyContent: 'center', alignItems: 'center' },
+  paymentIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.primary[50],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   paymentIconWrapActive: { backgroundColor: COLORS.primary[700] },
   paymentBody: { flex: 1, marginLeft: SPACING.md },
-  paymentLabel: { fontSize: 15, fontFamily: 'Inter-SemiBold', color: COLORS.neutral[900] },
-  paymentDesc: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500], marginTop: 2 },
-  paymentRadio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.neutral[300], justifyContent: 'center', alignItems: 'center' },
-  paymentRadioActive: { borderColor: COLORS.primary[700] },
-  paymentRadioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: COLORS.primary[700] },
-  secureNote: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: SPACING.md },
-  secureText: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500] },
-
-  // Bottom bar
-  bottomBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: COLORS.white, paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md, paddingBottom: 30,
-    borderTopWidth: 1, borderTopColor: COLORS.neutral[100], ...SHADOWS.large,
+  paymentLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900],
   },
-  bottomTotalLabel: { fontSize: 12, fontFamily: 'Inter-Regular', color: COLORS.neutral[500] },
-  bottomTotalValue: { fontSize: 20, fontFamily: 'Inter-Bold', color: COLORS.neutral[900] },
+  paymentDesc: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    marginTop: 2,
+  },
+  paymentRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: COLORS.neutral[300],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paymentRadioActive: { borderColor: COLORS.primary[700] },
+  paymentRadioDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.primary[700],
+  },
+  secureNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: SPACING.md,
+  },
+  secureText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingBottom: 30,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.neutral[100],
+    ...SHADOWS.large,
+  },
+  bottomTotalLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+  },
+  bottomTotalValue: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+  },
 });
