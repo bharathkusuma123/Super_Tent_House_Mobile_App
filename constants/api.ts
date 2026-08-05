@@ -7,7 +7,9 @@
 
 
 // constants/api.ts
-export const API_BASE_URL = 'https://delivering-shortcuts-paper-television.trycloudflare.com/api';
+// export const API_BASE_URL = 'https://delivering-shortcuts-paper-television.trycloudflare.com/api';
+
+export const API_BASE_URL = 'http://200.141.7.42:5000/api';
 
 console.log('🌐 Using API URL:', API_BASE_URL);
 

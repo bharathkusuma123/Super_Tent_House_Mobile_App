@@ -26,6 +26,18 @@
     },
     "android": {
       "package": "com.rajesh_21122000.boltexponativewind"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1c0f3608-0301-4b8e-87e8-3179ea739e40"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1c0f3608-0301-4b8e-87e8-3179ea739e40"
     }
   }
 }
