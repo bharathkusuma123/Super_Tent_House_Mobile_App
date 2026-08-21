@@ -694,7 +694,9 @@ const amStyles = StyleSheet.create({
 });
 
 // ─── Main checkout screen ─────────────────────────────────────────────────────
-const steps = ['Address', 'Event', 'Summary', 'Payment'];
+// Only showing step 0 (Address) and step 1 (Event Details)
+// Steps 2 and 3 are hidden from the interface
+const steps = ['Address', 'Payment'];// Removed 'Summary' and 'Payment'
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -721,7 +723,6 @@ export default function CheckoutScreen() {
   const [venue, setVenue] = useState('');
   const [guestCount, setGuestCount] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('upi');
   const [processing, setProcessing] = useState(false);
 
   const customerId = authState.user?.id;
@@ -729,12 +730,6 @@ export default function CheckoutScreen() {
   const eventTimeDisplay = `${pad(timeHour)}:${pad(timeMin)} ${timeMer}`;
 
   const eventTypes = ['Wedding', 'Reception', 'Birthday', 'Corporate', 'Festival', 'Other'];
-  const paymentMethods = [
-    { key: 'upi',    label: 'UPI',                  icon: Smartphone, desc: 'GPay, PhonePe, Paytm' },
-    { key: 'card',   label: 'Credit / Debit Card',  icon: CreditCard,  desc: 'Visa, Mastercard, RuPay' },
-    { key: 'wallet', label: 'Wallet',               icon: Wallet,      desc: 'Paytm, Amazon Pay' },
-    { key: 'cod',    label: 'Cash on Confirmation', icon: Banknote,    desc: 'Pay after booking' },
-  ];
 
   // ─── Load addresses from database ───────────────────────────────────────────
   useEffect(() => {
@@ -907,6 +902,11 @@ export default function CheckoutScreen() {
       return;
     }
 
+    if (!selectedDate || !venue || !guestCount) {
+      show('Please fill all event details', 'error');
+      return;
+    }
+
     try {
       setProcessing(true);
 
@@ -947,7 +947,7 @@ export default function CheckoutScreen() {
         couponDiscount: state.couponDiscount || 0,
         couponCode: state.appliedCoupon || undefined,
         grandTotal: grandTotal,
-        paymentMethod: paymentMethod,
+        paymentMethod: 'cod', // Default to COD since payment step is hidden
         notes: '',
       };
 
@@ -977,16 +977,27 @@ export default function CheckoutScreen() {
       show('Please add an address to continue', 'error');
       return;
     }
+    if (step === 0 && addresses.length > 0) {
+      // Move to event details step
+      setStep(1);
+      return;
+    }
     if (step === 1) {
       if (!selectedDate || !venue || !guestCount) {
         show('Please fill all event details', 'error');
         return;
       }
-    }
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
+      // Create order directly from event details step
       createOrder();
+    }
+  };
+
+  // ─── Handle Back ──────────────────────────────────────────────────────────────
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    } else {
+      router.back();
     }
   };
 
@@ -1006,7 +1017,7 @@ export default function CheckoutScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => (step > 0 ? setStep(step - 1) : router.back())}
+          onPress={handleBack}
         >
           <ArrowLeft color={COLORS.neutral[800]} size={24} />
         </TouchableOpacity>
@@ -1067,7 +1078,7 @@ export default function CheckoutScreen() {
                       {selectedAddr === i && <View style={styles.addressRadioDot} />}
                     </View>
                     <View style={styles.addressBody}>
-                      <View style={styles.addressHeader}>
+                      <View style={styles.addressHeaderRow}>
                         <View style={[styles.addressTypeBadge, { backgroundColor: color + '20' }]}>
                           <Icon size={14} color={color} />
                           <Text style={[styles.addressTypeText, { color }]}>
@@ -1210,78 +1221,22 @@ export default function CheckoutScreen() {
                 />
               </View>
             </View>
-          </Animated.View>
-        )}
 
-        {/* ── Step 2: Order Summary ── */}
-        {step === 2 && (
-          <Animated.View entering={SlideInRight} style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Order Summary</Text>
-            {state.items.map(item => (
-              <View key={item.id} style={styles.summaryItem}>
-                <View style={styles.summaryItemInfo}>
-                  <Text style={styles.summaryItemName} numberOfLines={2}>{item.name}</Text>
-                  <Text style={styles.summaryItemQty}>Qty: {item.quantity}</Text>
-                </View>
-                <Text style={styles.summaryItemPrice}>
-                  ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                </Text>
+            {/* Order Summary Preview */}
+            <View style={styles.summaryPreview}>
+              <Text style={styles.summaryPreviewTitle}>Order Summary</Text>
+              <View style={styles.summaryDivider} />
+              <Row label="Subtotal" value={`₹${subtotal.toLocaleString('en-IN')}`} />
+              {state.couponDiscount > 0 && (
+                <Row label="Discount" value={`-₹${state.couponDiscount.toLocaleString('en-IN')}`} green />
+              )}
+              <Row label="Delivery" value={deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`} />
+              <Row label="GST (18%)" value={`₹${gst.toLocaleString('en-IN')}`} />
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryRow}>
+                <Text style={styles.totalLabel}>Grand Total</Text>
+                <Text style={styles.totalValue}>₹{grandTotal.toLocaleString('en-IN')}</Text>
               </View>
-            ))}
-            <View style={styles.summaryDivider} />
-            <Row label="Subtotal" value={`₹${subtotal.toLocaleString('en-IN')}`} />
-            {state.couponDiscount > 0 && (
-              <Row label="Discount" value={`-₹${state.couponDiscount.toLocaleString('en-IN')}`} green />
-            )}
-            <Row label="Delivery" value={deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`} />
-            <Row label="GST (18%)" value={`₹${gst.toLocaleString('en-IN')}`} />
-
-            {selectedDate && (
-              <View style={styles.eventPill}>
-                <Calendar color={COLORS.primary[600]} size={16} />
-                <Text style={styles.eventPillText}>
-                  {formatDisplay(selectedDate)} • {eventTimeDisplay} • {eventType}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Grand Total</Text>
-              <Text style={styles.totalValue}>₹{grandTotal.toLocaleString('en-IN')}</Text>
-            </View>
-          </Animated.View>
-        )}
-
-        {/* ── Step 3: Payment ── */}
-        {step === 3 && (
-          <Animated.View entering={SlideInRight} style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Payment Method</Text>
-            {paymentMethods.map(pm => {
-              const Icon = pm.icon;
-              const active = paymentMethod === pm.key;
-              return (
-                <TouchableOpacity
-                  key={pm.key}
-                  style={[styles.paymentCard, active && styles.paymentCardActive]}
-                  onPress={() => setPaymentMethod(pm.key)}
-                >
-                  <View style={[styles.paymentIconWrap, active && styles.paymentIconWrapActive]}>
-                    <Icon color={active ? COLORS.white : COLORS.primary[600]} size={22} />
-                  </View>
-                  <View style={styles.paymentBody}>
-                    <Text style={styles.paymentLabel}>{pm.label}</Text>
-                    <Text style={styles.paymentDesc}>{pm.desc}</Text>
-                  </View>
-                  <View style={[styles.paymentRadio, active && styles.paymentRadioActive]}>
-                    {active && <View style={styles.paymentRadioDot} />}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-            <View style={styles.secureNote}>
-              <Check color={COLORS.success} size={16} />
-              <Text style={styles.secureText}>Your payment information is secure and encrypted</Text>
             </View>
           </Animated.View>
         )}
@@ -1295,11 +1250,11 @@ export default function CheckoutScreen() {
         <Button
           onPress={handleNext}
           loading={processing}
-          variant={step === 3 ? 'gold' : 'primary'}
+          variant={step === 1 ? 'gold' : 'primary'}
           size="lg"
           style={{ flex: 1, marginLeft: SPACING.md }}
         >
-          {step === 3 ? (processing ? 'Processing...' : 'Pay Now') : 'Continue'}
+          {step === 0 ? 'Continue' : (processing ? 'Placing Order...' : 'Place Order')}
         </Button>
       </View>
 
@@ -1443,7 +1398,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary[700],
   },
   addressBody: { flex: 1 },
-  addressHeader: {
+  addressHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
@@ -1607,35 +1562,23 @@ const styles = StyleSheet.create({
     color: COLORS.neutral[700],
   },
   chipTextActive: { color: COLORS.white },
-  summaryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100],
+  summaryPreview: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+    ...SHADOWS.small,
   },
-  summaryItemInfo: { flex: 1 },
-  summaryItemName: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
+  summaryPreviewTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-Bold',
     color: COLORS.neutral[900],
-  },
-  summaryItemQty: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: COLORS.neutral[500],
-    marginTop: 2,
-  },
-  summaryItemPrice: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: COLORS.neutral[900],
+    marginBottom: SPACING.sm,
   },
   summaryDivider: {
     height: 1,
     backgroundColor: COLORS.neutral[200],
-    marginVertical: SPACING.md,
+    marginVertical: SPACING.sm,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -1661,81 +1604,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Inter-Bold',
     color: COLORS.primary[700],
-  },
-  eventPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary[50],
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginTop: SPACING.sm,
-  },
-  eventPillText: {
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: COLORS.primary[700],
-    flex: 1,
-  },
-  paymentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    ...SHADOWS.small,
-  },
-  paymentCardActive: { borderColor: COLORS.primary[600] },
-  paymentIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paymentIconWrapActive: { backgroundColor: COLORS.primary[700] },
-  paymentBody: { flex: 1, marginLeft: SPACING.md },
-  paymentLabel: {
-    fontSize: 15,
-    fontFamily: 'Inter-SemiBold',
-    color: COLORS.neutral[900],
-  },
-  paymentDesc: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: COLORS.neutral[500],
-    marginTop: 2,
-  },
-  paymentRadio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: COLORS.neutral[300],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paymentRadioActive: { borderColor: COLORS.primary[700] },
-  paymentRadioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.primary[700],
-  },
-  secureNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: SPACING.md,
-  },
-  secureText: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: COLORS.neutral[500],
   },
   bottomBar: {
     position: 'absolute',

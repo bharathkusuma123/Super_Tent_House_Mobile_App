@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "bolt-expo-nativewind",
+    "name": "Super Tent House",
     "slug": "bolt-expo-nativewind",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,20 +24,17 @@
     "experiments": {
       "typedRoutes": true
     },
-    "android": {
-      "package": "com.rajesh_21122000.boltexponativewind"
-    },
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "1c0f3608-0301-4b8e-87e8-3179ea739e40"
+        "projectId": "c320debc-90d6-4584-ba56-7be23be05927"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "updates": {
-      "url": "https://u.expo.dev/1c0f3608-0301-4b8e-87e8-3179ea739e40"
+    "android": {
+      "package": "com.ausalasaikrishna.boltexponativewind"
     }
   }
 }

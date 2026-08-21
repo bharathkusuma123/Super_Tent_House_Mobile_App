@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { API_BASE_URL } from '@/services/api';
 
+
 interface OrderItem {
   id: string;
   productId: string;
@@ -75,6 +76,10 @@ export default function OrdersScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const customerId = authState.user?.id;
+
+  const handleBack = () => {
+  router.replace('/profile');
+};
 
   // ─── Fetch orders from API ──────────────────────────────────────────────────
   const fetchOrders = useCallback(async () => {
@@ -180,12 +185,26 @@ export default function OrdersScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>My Orders</Text>
-        <Text style={styles.subtitle}>Track and manage your bookings</Text>
-        {orders.length > 0 && (
-          <Text style={styles.orderCount}>Total: {orders.length} order{orders.length > 1 ? 's' : ''}</Text>
-        )}
-      </View>
+  <TouchableOpacity
+    onPress={handleBack}
+    style={styles.backButton}
+    activeOpacity={0.7}
+  >
+    <Text style={styles.backButtonText}>← Back</Text>
+  </TouchableOpacity>
+
+  <Text style={styles.title}>My Orders</Text>
+
+  <Text style={styles.subtitle}>
+    Track and manage your bookings
+  </Text>
+
+  {orders.length > 0 && (
+    <Text style={styles.orderCount}>
+      Total: {orders.length} order{orders.length > 1 ? 's' : ''}
+    </Text>
+  )}
+</View>
 
       <View style={styles.tabsRow}>
         {tabs.map((tab) => {
@@ -351,6 +370,19 @@ const styles = StyleSheet.create({
   tabBadgeTextActive: {
     color: COLORS.white,
   },
+
+  backButton: {
+  alignSelf: 'flex-start',
+  marginBottom: SPACING.sm,
+  paddingVertical: 6,
+  paddingHorizontal: 4,
+},
+
+backButtonText: {
+  fontSize: 14,
+  fontFamily: 'Inter-SemiBold',
+  color: COLORS.primary[700],
+},
   orderCard: { 
     backgroundColor: COLORS.white, 
     borderRadius: RADIUS.xxl, 

@@ -1110,7 +1110,7 @@ function SupportCard() {
           </View>
           <View>
             <Text style={sc.btnLabel}>Call Us</Text>
-            <Text style={sc.btnNumber}>+91 98765 43210</Text>
+            <Text style={sc.btnNumber}>+919876543210</Text>
           </View>
         </TouchableOpacity>
 
