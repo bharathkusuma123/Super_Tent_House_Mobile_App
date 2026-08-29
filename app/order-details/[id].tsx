@@ -1659,7 +1659,7 @@ export default function OrderDetailsScreen() {
       console.log('📦 Fetching order details for ID:', id);
       const response = await axios.get(`${API_BASE_URL}/customer-orders/${id}`);
       
-      if (response.data.success && response.data.data) {
+      if (response.data.success && response.data.data) { 
         const orderData = response.data.data;
         const parsedOrder = {
           ...orderData,
