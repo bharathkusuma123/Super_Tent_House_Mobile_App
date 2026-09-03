@@ -7,6 +7,7 @@ import { API_BASE_URL } from './api';
 // ─── Types ──────────────────────────────────────────────────────────────────────
 export interface InvoiceData {
   orderId: number;
+  orderSource?: 'customer' | 'admin';
   orderNumber: string;
   customerName: string;
   customerEmail: string;

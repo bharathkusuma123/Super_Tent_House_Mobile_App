@@ -694,9 +694,8 @@ const amStyles = StyleSheet.create({
 });
 
 // ─── Main checkout screen ─────────────────────────────────────────────────────
-// Only showing step 0 (Address) and step 1 (Event Details)
-// Steps 2 and 3 are hidden from the interface
-const steps = ['Address', 'Payment'];// Removed 'Summary' and 'Payment'
+// Only showing step 0 (Address) - Steps 1, 2, and 3 are hidden/commented out
+const steps = ['Address']; // Removed 'Event Details', 'Payment', 'Summary'
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -711,25 +710,23 @@ export default function CheckoutScreen() {
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [loadingAddress, setLoadingAddress] = useState(true);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showCal, setShowCal] = useState(false);
-
-  const [timeHour, setTimeHour] = useState(6);
-  const [timeMin, setTimeMin] = useState(0);
-  const [timeMer, setTimeMer] = useState<'AM' | 'PM'>('PM');
-  const [showTime, setShowTime] = useState(false);
-
-  const [eventType, setEventType] = useState('Wedding');
-  const [venue, setVenue] = useState('');
-  const [guestCount, setGuestCount] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [processing, setProcessing] = useState(false);
+  // ─── Commented out Event Details state ──────────────────────────────────────
+  // const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  // const [showCal, setShowCal] = useState(false);
+  // const [timeHour, setTimeHour] = useState(6);
+  // const [timeMin, setTimeMin] = useState(0);
+  // const [timeMer, setTimeMer] = useState<'AM' | 'PM'>('PM');
+  // const [showTime, setShowTime] = useState(false);
+  // const [eventType, setEventType] = useState('Wedding');
+  // const [venue, setVenue] = useState('');
+  // const [guestCount, setGuestCount] = useState('');
+  // const [instructions, setInstructions] = useState('');
+  // const [processing, setProcessing] = useState(false);
 
   const customerId = authState.user?.id;
-  const eventDateDisplay = selectedDate ? formatDisplay(selectedDate) : '';
-  const eventTimeDisplay = `${pad(timeHour)}:${pad(timeMin)} ${timeMer}`;
-
-  const eventTypes = ['Wedding', 'Reception', 'Birthday', 'Corporate', 'Festival', 'Other'];
+  // const eventDateDisplay = selectedDate ? formatDisplay(selectedDate) : '';
+  // const eventTimeDisplay = `${pad(timeHour)}:${pad(timeMin)} ${timeMer}`;
+  // const eventTypes = ['Wedding', 'Reception', 'Birthday', 'Corporate', 'Festival', 'Other'];
 
   // ─── Load addresses from database ───────────────────────────────────────────
   useEffect(() => {
@@ -890,6 +887,8 @@ export default function CheckoutScreen() {
   };
 
   // ─── Create Order ──────────────────────────────────────────────────────────────
+  // ─── Commented out - moved to simplified order creation ──────────────────────
+  /*
   const createOrder = async () => {
     if (!customerId) {
       show('Please login to place order', 'error');
@@ -947,7 +946,7 @@ export default function CheckoutScreen() {
         couponDiscount: state.couponDiscount || 0,
         couponCode: state.appliedCoupon || undefined,
         grandTotal: grandTotal,
-        paymentMethod: 'cod', // Default to COD since payment step is hidden
+        paymentMethod: 'cod',
         notes: '',
       };
 
@@ -970,35 +969,95 @@ export default function CheckoutScreen() {
       setProcessing(false);
     }
   };
+  */
+
+  // ─── Simplified order creation - no event details required ──────────────────
+  const placeOrder = async () => {
+    if (!customerId) {
+      show('Please login to place order', 'error');
+      return;
+    }
+
+    const selectedAddress = addresses[selectedAddr];
+    if (!selectedAddress) {
+      show('Please select an address', 'error');
+      return;
+    }
+
+    try {
+      const orderData: OrderInput = {
+        customerId: customerId,
+        customerName: authState.user?.name || '',
+        customerEmail: authState.user?.email || '',
+        customerPhone: authState.user?.phone || '',
+        address: {
+          id: selectedAddress.id,
+          label: selectedAddress.label,
+          fullName: selectedAddress.fullName,
+          phone: selectedAddress.phone,
+          line1: selectedAddress.line1,
+          line2: selectedAddress.line2 || '',
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          pincode: selectedAddress.pincode,
+          country: selectedAddress.country || 'India',
+        },
+        // ─── Event details - using default/placeholder values ──────────────────
+        eventDate: new Date().toISOString().split('T')[0],
+        eventTime: '12:00 PM',
+        eventType: 'Other',
+        venue: 'Not specified',
+        guestCount: 0,
+        specialInstructions: '',
+        items: state.items.map(item => ({
+          id: item.id,
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        subtotal: subtotal,
+        deliveryCharge: deliveryCharge,
+        gst: gst,
+        couponDiscount: state.couponDiscount || 0,
+        couponCode: state.appliedCoupon || undefined,
+        grandTotal: grandTotal,
+        paymentMethod: 'cod',
+        notes: '',
+      };
+
+      console.log('📦 Creating order with data:', orderData);
+
+      const result = await orderService.createOrder(orderData);
+
+      if (result) {
+        console.log('✅ Order created:', result);
+        clearCart();
+        router.replace('/order-success');
+        show('Order placed successfully! 🎉');
+      } else {
+        show('Failed to place order', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Failed to create order:', error);
+      show('Failed to place order', 'error');
+    }
+  };
 
   // ─── Handle Next ──────────────────────────────────────────────────────────────
   const handleNext = () => {
-    if (step === 0 && addresses.length === 0) {
+    if (addresses.length === 0) {
       show('Please add an address to continue', 'error');
       return;
     }
-    if (step === 0 && addresses.length > 0) {
-      // Move to event details step
-      setStep(1);
-      return;
-    }
-    if (step === 1) {
-      if (!selectedDate || !venue || !guestCount) {
-        show('Please fill all event details', 'error');
-        return;
-      }
-      // Create order directly from event details step
-      createOrder();
-    }
+    // Directly place order from address step
+    placeOrder();
   };
 
   // ─── Handle Back ──────────────────────────────────────────────────────────────
   const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    } else {
-      router.back();
-    }
+    router.back();
   };
 
   if (loadingAddress) {
@@ -1117,10 +1176,29 @@ export default function CheckoutScreen() {
                 );
               })
             )}
+
+            {/* ─── Order Summary Preview ───────────────────────────────────── */}
+            <View style={styles.summaryPreview}>
+              <Text style={styles.summaryPreviewTitle}>Order Summary</Text>
+              <View style={styles.summaryDivider} />
+              <Row label="Subtotal" value={`₹${subtotal.toLocaleString('en-IN')}`} />
+              {state.couponDiscount > 0 && (
+                <Row label="Discount" value={`-₹${state.couponDiscount.toLocaleString('en-IN')}`} green />
+              )}
+              <Row label="Delivery" value={deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`} />
+              <Row label="GST (18%)" value={`₹${gst.toLocaleString('en-IN')}`} />
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryRow}>
+                <Text style={styles.totalLabel}>Grand Total</Text>
+                <Text style={styles.totalValue}>₹{grandTotal.toLocaleString('en-IN')}</Text>
+              </View>
+            </View>
+
           </Animated.View>
         )}
 
-        {/* ── Step 1: Event Details ── */}
+        {/* ── Commented out Step 1: Event Details ────────────────────────────── */}
+        {/* 
         {step === 1 && (
           <Animated.View entering={SlideInRight} style={styles.stepContent}>
             <Text style={styles.stepTitle}>Event Details</Text>
@@ -1221,25 +1299,10 @@ export default function CheckoutScreen() {
                 />
               </View>
             </View>
-
-            {/* Order Summary Preview */}
-            <View style={styles.summaryPreview}>
-              <Text style={styles.summaryPreviewTitle}>Order Summary</Text>
-              <View style={styles.summaryDivider} />
-              <Row label="Subtotal" value={`₹${subtotal.toLocaleString('en-IN')}`} />
-              {state.couponDiscount > 0 && (
-                <Row label="Discount" value={`-₹${state.couponDiscount.toLocaleString('en-IN')}`} green />
-              )}
-              <Row label="Delivery" value={deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`} />
-              <Row label="GST (18%)" value={`₹${gst.toLocaleString('en-IN')}`} />
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.totalLabel}>Grand Total</Text>
-                <Text style={styles.totalValue}>₹{grandTotal.toLocaleString('en-IN')}</Text>
-              </View>
-            </View>
           </Animated.View>
         )}
+        */}
+
       </ScrollView>
 
       <View style={styles.bottomBar}>
@@ -1249,15 +1312,16 @@ export default function CheckoutScreen() {
         </View>
         <Button
           onPress={handleNext}
-          loading={processing}
-          variant={step === 1 ? 'gold' : 'primary'}
+          variant="gold"
           size="lg"
           style={{ flex: 1, marginLeft: SPACING.md }}
         >
-          {step === 0 ? 'Continue' : (processing ? 'Placing Order...' : 'Place Order')}
+          {addresses.length === 0 ? 'Add Address' : 'Place Order'}
         </Button>
       </View>
 
+      {/* ─── Commented out Calendar and Time Picker modals ─────────────────────── */}
+      {/* 
       <CalendarModal
         visible={showCal}
         onClose={() => setShowCal(false)}
@@ -1272,6 +1336,8 @@ export default function CheckoutScreen() {
         meridiem={timeMer}
         onChange={(h, m, mer) => { setTimeHour(h); setTimeMin(m); setTimeMer(mer); }}
       />
+      */}
+
       <AddAddressModal
         visible={showAddAddress}
         onClose={() => setShowAddAddress(false)}

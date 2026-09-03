@@ -528,10 +528,10 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   // Safely get reviews array
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -540,29 +540,29 @@
 
 //   // Safely get features array
 //   const features = Array.isArray(product.features) ? product.features : [];
-  
+
 //   // Safely get colors array
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
-  
+
 //   // Safely get specifications - handle both array and object
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 
 //   return (
@@ -996,7 +996,7 @@
 //   const [qty, setQty] = useState(1);
 //   const [selectedColor, setSelectedColor] = useState(0);
 //   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
-  
+
 //   // ─── State for color-image mapping ──────────────────────────────────────────
 //   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
 //   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
@@ -1005,18 +1005,18 @@
 //     console.log(`🔍 Loading product with ID: ${id}`);
 //     try {
 //       const p = await mockApi.getProduct(id);
-      
+
 //       console.log('📦 Full product data:', JSON.stringify(p, null, 2));
 //       console.log('🎨 Colors:', p?.colors);
 //       console.log('🖼️ Color Images Map:', p?.color_images);
 //       console.log('📸 General Images:', p?.images);
-      
+
 //       setProduct(p || null);
-      
+
 //       // ─── Set up color-image mapping ────────────────────────────────────────────
 //       if (p?.color_images && Object.keys(p.color_images).length > 0) {
 //         console.log('✅ Color images found:', Object.keys(p.color_images));
-        
+
 //         // Process color images to ensure full URLs
 //         const processedColorImages: Record<string, string[]> = {};
 //         Object.keys(p.color_images).forEach(color => {
@@ -1026,9 +1026,9 @@
 //             console.log(`  ${color}: ${processedColorImages[color].length} images`);
 //           }
 //         });
-        
+
 //         setColorImagesMap(processedColorImages);
-        
+
 //         // Set initial images based on first color
 //         const firstColor = p.colors?.[0];
 //         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
@@ -1045,7 +1045,7 @@
 //         setCurrentColorImages(generalImages);
 //         console.log('📸 Using general images');
 //       }
-      
+
 //       if (p) {
 //         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
 //         setRelated(rels);
@@ -1064,11 +1064,11 @@
 //     setSelectedColor(index);
 //     const colors = product?.colors || [];
 //     const selectedColorHex = colors[index];
-    
+
 //     console.log(`🎨 Color selected: ${selectedColorHex} (${getColorName(selectedColorHex)})`);
 //     console.log(`📊 Available color images keys:`, Object.keys(colorImagesMap));
 //     console.log(`📊 Images for ${selectedColorHex}:`, colorImagesMap[selectedColorHex]);
-    
+
 //     // Check if we have color-specific images for this color
 //     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
 //       setCurrentColorImages(colorImagesMap[selectedColorHex]);
@@ -1130,10 +1130,10 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   // Safely get reviews array
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -1142,32 +1142,32 @@
 
 //   // Safely get features array
 //   const features = Array.isArray(product.features) ? product.features : [];
-  
+
 //   // Safely get colors array
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
-  
+
 //   // Safely get sizes array
 //   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
 //   // Safely get specifications - handle both array and object
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 
 //   // ─── Use currentColorImages for gallery ──────────────────────────────────────
@@ -1178,7 +1178,7 @@
 //   return (
 //     <View style={styles.container}>
 //       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
 //         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
 //         <View style={styles.galleryWrap}>
 //           {displayImages.length > 0 ? (
@@ -1213,7 +1213,7 @@
 //               ))}
 //             </View>
 //           )}
-          
+
 //           {/* ─── Show color indicator on images ────────────────────────────────── */}
 //           {colors.length > 0 && colors[selectedColor] && (
 //             <View style={styles.colorIndicator}>
@@ -1507,7 +1507,7 @@
 
 // const styles = StyleSheet.create({
 //   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
 //   galleryWrap: { width: width, height: 350, position: 'relative' },
 //   galleryImage: { width, height: 350 },
 //   galleryDots: { 
@@ -1529,7 +1529,7 @@
 //     width: 24, 
 //     backgroundColor: COLORS.white 
 //   },
-  
+
 //   // ─── Color indicator on image ────────────────────────────────────────────────
 //   colorIndicator: {
 //     position: 'absolute',
@@ -1557,7 +1557,7 @@
 //     fontSize: 12,
 //     fontFamily: 'Inter-Medium',
 //   },
-  
+
 //   floatingHeader: { 
 //     position: 'absolute', 
 //     left: SPACING.md, 
@@ -1577,7 +1577,7 @@
 //     ...SHADOWS.small 
 //   },
 //   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
+
 //   infoSection: { 
 //     backgroundColor: COLORS.white, 
 //     marginTop: -20, 
@@ -1585,7 +1585,7 @@
 //     borderTopRightRadius: RADIUS.xxl, 
 //     padding: SPACING.lg 
 //   },
-  
+
 //   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 //   categoryText: { 
 //     fontSize: 12, 
@@ -1605,7 +1605,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   productName: { 
 //     fontSize: 22, 
 //     fontFamily: 'Inter-Bold', 
@@ -1613,7 +1613,7 @@
 //     marginTop: 6, 
 //     lineHeight: 28 
 //   },
-  
+
 //   ratingRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -1646,7 +1646,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.success 
 //   },
-  
+
 //   priceRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -1675,7 +1675,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.error 
 //   },
-  
+
 //   // ─── Color Section ───────────────────────────────────────────────────────────
 //   colorSection: { marginTop: SPACING.lg },
 //   colorLabel: { 
@@ -1729,7 +1729,7 @@
 //     paddingVertical: 2,
 //     borderRadius: RADIUS.sm,
 //   },
-  
+
 //   // ─── Size Section ────────────────────────────────────────────────────────────
 //   sizeSection: { marginTop: SPACING.lg },
 //   sizeLabel: { 
@@ -1756,7 +1756,7 @@
 //     fontFamily: 'Inter-Medium', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   qtySection: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -1787,7 +1787,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   tabsRow: { 
 //     flexDirection: 'row', 
 //     marginTop: SPACING.xl, 
@@ -1812,9 +1812,9 @@
 //     color: COLORS.primary[700], 
 //     fontFamily: 'Inter-SemiBold' 
 //   },
-  
+
 //   tabContent: { marginTop: SPACING.md },
-  
+
 //   descriptionText: { 
 //     fontSize: 14, 
 //     fontFamily: 'Inter-Regular', 
@@ -1845,7 +1845,7 @@
 //     fontFamily: 'Inter-Regular', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   specRow: { 
 //     flexDirection: 'row', 
 //     justifyContent: 'space-between', 
@@ -1870,7 +1870,7 @@
 //     textAlign: 'center', 
 //     paddingVertical: SPACING.lg 
 //   },
-  
+
 //   ratingSummary: { 
 //     flexDirection: 'row', 
 //     gap: SPACING.lg, 
@@ -1921,7 +1921,7 @@
 //     color: COLORS.neutral[500], 
 //     width: 20 
 //   },
-  
+
 //   reviewCard: { 
 //     flexDirection: 'row', 
 //     paddingVertical: SPACING.md, 
@@ -1960,7 +1960,7 @@
 //     color: COLORS.neutral[400], 
 //     marginTop: 4 
 //   },
-  
+
 //   faqItem: { 
 //     paddingVertical: SPACING.md, 
 //     borderBottomWidth: 1, 
@@ -1978,7 +1978,7 @@
 //     marginTop: 4, 
 //     lineHeight: 18 
 //   },
-  
+
 //   deliveryCard: { 
 //     marginTop: SPACING.lg, 
 //     backgroundColor: COLORS.primary[50], 
@@ -2002,7 +2002,7 @@
 //     color: COLORS.neutral[500], 
 //     marginTop: 2 
 //   },
-  
+
 //   relatedSection: { marginTop: SPACING.xl },
 //   relatedTitle: { 
 //     fontSize: 18, 
@@ -2011,7 +2011,7 @@
 //     paddingHorizontal: SPACING.md, 
 //     marginBottom: SPACING.md 
 //   },
-  
+
 //   bottomBar: { 
 //     position: 'absolute', 
 //     bottom: 0, 
@@ -2126,7 +2126,7 @@
 //   const [qty, setQty] = useState(1);
 //   const [selectedColor, setSelectedColor] = useState(0);
 //   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
-  
+
 //   // ─── State for color-image mapping ──────────────────────────────────────────
 //   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
 //   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
@@ -2135,19 +2135,19 @@
 //     console.log(`🔍 Loading product with ID: ${id}`);
 //     try {
 //       const p = await mockApi.getProduct(id);
-      
+
 //       console.log('📦 Full product data:', JSON.stringify(p, null, 2));
 //       console.log('🎨 Colors:', p?.colors);
 //       console.log('🖼️ Color Images Map:', p?.color_images);
 //       console.log('📸 General Images:', p?.images);
 //       console.log('📝 Description:', p?.description);
-      
+
 //       setProduct(p || null);
-      
+
 //       // ─── Set up color-image mapping ────────────────────────────────────────────
 //       if (p?.color_images && Object.keys(p.color_images).length > 0) {
 //         console.log('✅ Color images found:', Object.keys(p.color_images));
-        
+
 //         const processedColorImages: Record<string, string[]> = {};
 //         Object.keys(p.color_images).forEach(color => {
 //           const images = p.color_images?.[color];
@@ -2156,9 +2156,9 @@
 //             console.log(`  ${color}: ${processedColorImages[color].length} images`);
 //           }
 //         });
-        
+
 //         setColorImagesMap(processedColorImages);
-        
+
 //         const firstColor = p.colors?.[0];
 //         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
 //           setCurrentColorImages(processedColorImages[firstColor]);
@@ -2173,7 +2173,7 @@
 //         setCurrentColorImages(generalImages);
 //         console.log('📸 Using general images');
 //       }
-      
+
 //       if (p) {
 //         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
 //         setRelated(rels);
@@ -2192,16 +2192,16 @@
 //     setSelectedColor(index);
 //     const colors = product?.colors || [];
 //     const selectedColorHex = colors[index];
-    
+
 //     console.log(`🎨 Color selected: ${selectedColorHex} (${getColorName(selectedColorHex)})`);
 //     console.log(`📊 Available color images keys:`, Object.keys(colorImagesMap));
 //     console.log(`📊 Images for ${selectedColorHex}:`, colorImagesMap[selectedColorHex]);
-    
+
 //     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
 //       const validImages = colorImagesMap[selectedColorHex].filter(img => 
 //         img && (img.startsWith('http') || img.includes('uploads/'))
 //       );
-      
+
 //       if (validImages.length > 0) {
 //         setCurrentColorImages(validImages);
 //         console.log(`🖼️ Showing ${validImages.length} valid images for ${getColorName(selectedColorHex)}`);
@@ -2266,9 +2266,9 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -2278,32 +2278,32 @@
 //   const features = Array.isArray(product.features) ? product.features : [];
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
 //   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 //   const displayImages = currentColorImages.length > 0 ? currentColorImages : product.images.map(img => getFullImageUrl(img));
 
 //   return (
 //     <View style={styles.container}>
 //       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
 //         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
 //         <View style={styles.galleryWrap}>
 //           {displayImages.length > 0 ? (
@@ -2338,7 +2338,7 @@
 //               ))}
 //             </View>
 //           )}
-          
+
 //           {colors.length > 0 && colors[selectedColor] && (
 //             <View style={styles.colorIndicator}>
 //               <View 
@@ -2646,7 +2646,7 @@
 
 // const styles = StyleSheet.create({
 //   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
 //   galleryWrap: { width: width, height: 350, position: 'relative' },
 //   galleryImage: { width, height: 350 },
 //   galleryDots: { 
@@ -2668,7 +2668,7 @@
 //     width: 24, 
 //     backgroundColor: COLORS.white 
 //   },
-  
+
 //   colorIndicator: {
 //     position: 'absolute',
 //     bottom: 50,
@@ -2695,7 +2695,7 @@
 //     fontSize: 12,
 //     fontFamily: 'Inter-Medium',
 //   },
-  
+
 //   floatingHeader: { 
 //     position: 'absolute', 
 //     left: SPACING.md, 
@@ -2715,7 +2715,7 @@
 //     ...SHADOWS.small 
 //   },
 //   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
+
 //   infoSection: { 
 //     backgroundColor: COLORS.white, 
 //     marginTop: -20, 
@@ -2723,7 +2723,7 @@
 //     borderTopRightRadius: RADIUS.xxl, 
 //     padding: SPACING.lg 
 //   },
-  
+
 //   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 //   categoryText: { 
 //     fontSize: 12, 
@@ -2743,7 +2743,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   productName: { 
 //     fontSize: 22, 
 //     fontFamily: 'Inter-Bold', 
@@ -2751,7 +2751,7 @@
 //     marginTop: 6, 
 //     lineHeight: 28 
 //   },
-  
+
 //   ratingRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -2784,7 +2784,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.success 
 //   },
-  
+
 //   priceRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -2813,7 +2813,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.error 
 //   },
-  
+
 //   // ─── Description Preview Styles ─────────────────────────────────────────────
 //   descriptionPreview: {
 //     marginTop: SPACING.md,
@@ -2839,7 +2839,7 @@
 //     color: COLORS.primary[600],
 //     marginTop: 4,
 //   },
-  
+
 //   colorSection: { marginTop: SPACING.lg },
 //   colorLabel: { 
 //     fontSize: 14, 
@@ -2892,7 +2892,7 @@
 //     paddingVertical: 2,
 //     borderRadius: RADIUS.sm,
 //   },
-  
+
 //   sizeSection: { marginTop: SPACING.lg },
 //   sizeLabel: { 
 //     fontSize: 14, 
@@ -2918,7 +2918,7 @@
 //     fontFamily: 'Inter-Medium', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   qtySection: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -2949,7 +2949,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   tabsRow: { 
 //     flexDirection: 'row', 
 //     marginTop: SPACING.xl, 
@@ -2974,9 +2974,9 @@
 //     color: COLORS.primary[700], 
 //     fontFamily: 'Inter-SemiBold' 
 //   },
-  
+
 //   tabContent: { marginTop: SPACING.md },
-  
+
 //   descriptionText: { 
 //     fontSize: 14, 
 //     fontFamily: 'Inter-Regular', 
@@ -3007,7 +3007,7 @@
 //     fontFamily: 'Inter-Regular', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   specRow: { 
 //     flexDirection: 'row', 
 //     justifyContent: 'space-between', 
@@ -3032,7 +3032,7 @@
 //     textAlign: 'center', 
 //     paddingVertical: SPACING.lg 
 //   },
-  
+
 //   ratingSummary: { 
 //     flexDirection: 'row', 
 //     gap: SPACING.lg, 
@@ -3087,7 +3087,7 @@
 //     color: COLORS.neutral[500], 
 //     width: 20 
 //   },
-  
+
 //   reviewCard: { 
 //     flexDirection: 'row', 
 //     paddingVertical: SPACING.md, 
@@ -3126,7 +3126,7 @@
 //     color: COLORS.neutral[400], 
 //     marginTop: 4 
 //   },
-  
+
 //   faqItem: { 
 //     paddingVertical: SPACING.md, 
 //     borderBottomWidth: 1, 
@@ -3144,7 +3144,7 @@
 //     marginTop: 4, 
 //     lineHeight: 18 
 //   },
-  
+
 //   deliveryCard: { 
 //     marginTop: SPACING.lg, 
 //     backgroundColor: COLORS.primary[50], 
@@ -3168,7 +3168,7 @@
 //     color: COLORS.neutral[500], 
 //     marginTop: 2 
 //   },
-  
+
 //   relatedSection: { marginTop: SPACING.xl },
 //   relatedTitle: { 
 //     fontSize: 18, 
@@ -3177,7 +3177,7 @@
 //     paddingHorizontal: SPACING.md, 
 //     marginBottom: SPACING.md 
 //   },
-  
+
 //   bottomBar: { 
 //     position: 'absolute', 
 //     bottom: 0, 
@@ -3297,7 +3297,7 @@
 //   const [selectedColor, setSelectedColor] = useState(0);
 //   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
 //   const [addingToCart, setAddingToCart] = useState(false);
-  
+
 //   // ─── State for color-image mapping ──────────────────────────────────────────
 //   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
 //   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
@@ -3308,9 +3308,9 @@
 //     console.log(`🔍 Loading product with ID: ${id}`);
 //     try {
 //       const p = await mockApi.getProduct(id);
-      
+
 //       setProduct(p || null);
-      
+
 //       // ─── Set up color-image mapping ────────────────────────────────────────────
 //       if (p?.color_images && Object.keys(p.color_images).length > 0) {
 //         const processedColorImages: Record<string, string[]> = {};
@@ -3321,7 +3321,7 @@
 //           }
 //         });
 //         setColorImagesMap(processedColorImages);
-        
+
 //         const firstColor = p.colors?.[0];
 //         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
 //           setCurrentColorImages(processedColorImages[firstColor]);
@@ -3331,7 +3331,7 @@
 //       } else {
 //         setCurrentColorImages(p?.images || []);
 //       }
-      
+
 //       if (p) {
 //         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
 //         setRelated(rels);
@@ -3350,7 +3350,7 @@
 //     setSelectedColor(index);
 //     const colors = product?.colors || [];
 //     const selectedColorHex = colors[index];
-    
+
 //     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
 //       setCurrentColorImages(colorImagesMap[selectedColorHex]);
 //     } else {
@@ -3370,20 +3370,20 @@
 
 // const handleAddCart = async () => {
 //   if (!product) return;
-  
+
 //   if (!customerId) {
 //     show('Please login to add items to cart', 'error');
 //     router.push('/(auth)/login');
 //     return;
 //   }
-  
+
 //   setAddingToCart(true);
 //   try {
 //     const productId = product.id;
 //     const productName = product.name;
 //     const productPrice = product.price;
 //     const productImage = product.images?.[0] || '';
-    
+
 //     console.log('📦 Adding to cart with customerId:', customerId);
 //     console.log('📦 Product data:', {
 //       id: productId,
@@ -3391,7 +3391,7 @@
 //       price: productPrice,
 //       image: productImage,
 //     });
-    
+
 //     // Create cart item
 //     const cartItem = {
 //       id: `${productId}_${Date.now()}`,
@@ -3402,13 +3402,13 @@
 //       quantity: qty,
 //       type: 'product' as const,
 //     };
-    
+
 //     // Add to cart (this will sync with backend)
 //     await addItem(cartItem, customerId);
-    
+
 //     // Refresh cart from server
 //     await fetchCart(customerId);
-    
+
 //     show('Added to cart 🛒');
 //   } catch (error: any) {
 //     console.error('Error adding to cart:', error);
@@ -3452,9 +3452,9 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -3464,32 +3464,32 @@
 //   const features = Array.isArray(product.features) ? product.features : [];
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
 //   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 //   const displayImages = currentColorImages.length > 0 ? currentColorImages : product.images;
 
 //   return (
 //     <View style={styles.container}>
 //       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
 //         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
 //         <View style={styles.galleryWrap}>
 //           {displayImages.length > 0 ? (
@@ -3524,7 +3524,7 @@
 //               ))}
 //             </View>
 //           )}
-          
+
 //           {colors.length > 0 && colors[selectedColor] && (
 //             <View style={styles.colorIndicator}>
 //               <View 
@@ -3849,7 +3849,7 @@
 
 // const styles = StyleSheet.create({
 //   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
 //   galleryWrap: { width: width, height: 350, position: 'relative' },
 //   galleryImage: { width, height: 350 },
 //   galleryDots: { 
@@ -3871,7 +3871,7 @@
 //     width: 24, 
 //     backgroundColor: COLORS.white 
 //   },
-  
+
 //   colorIndicator: {
 //     position: 'absolute',
 //     bottom: 50,
@@ -3898,7 +3898,7 @@
 //     fontSize: 12,
 //     fontFamily: 'Inter-Medium',
 //   },
-  
+
 //   floatingHeader: { 
 //     position: 'absolute', 
 //     left: SPACING.md, 
@@ -3918,7 +3918,7 @@
 //     ...SHADOWS.small 
 //   },
 //   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
+
 //   infoSection: { 
 //     backgroundColor: COLORS.white, 
 //     marginTop: -20, 
@@ -3926,7 +3926,7 @@
 //     borderTopRightRadius: RADIUS.xxl, 
 //     padding: SPACING.lg 
 //   },
-  
+
 //   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 //   categoryText: { 
 //     fontSize: 12, 
@@ -3946,7 +3946,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   productName: { 
 //     fontSize: 22, 
 //     fontFamily: 'Inter-Bold', 
@@ -3954,7 +3954,7 @@
 //     marginTop: 6, 
 //     lineHeight: 28 
 //   },
-  
+
 //   ratingRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -3987,7 +3987,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.success 
 //   },
-  
+
 //   priceRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -4016,7 +4016,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.error 
 //   },
-  
+
 //   // ─── Description Preview Styles ─────────────────────────────────────────────
 //   descriptionPreview: {
 //     marginTop: SPACING.md,
@@ -4042,7 +4042,7 @@
 //     color: COLORS.primary[600],
 //     marginTop: 4,
 //   },
-  
+
 //   colorSection: { marginTop: SPACING.lg },
 //   colorLabel: { 
 //     fontSize: 14, 
@@ -4095,7 +4095,7 @@
 //     paddingVertical: 2,
 //     borderRadius: RADIUS.sm,
 //   },
-  
+
 //   sizeSection: { marginTop: SPACING.lg },
 //   sizeLabel: { 
 //     fontSize: 14, 
@@ -4121,7 +4121,7 @@
 //     fontFamily: 'Inter-Medium', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   qtySection: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -4152,7 +4152,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   tabsRow: { 
 //     flexDirection: 'row', 
 //     marginTop: SPACING.xl, 
@@ -4177,9 +4177,9 @@
 //     color: COLORS.primary[700], 
 //     fontFamily: 'Inter-SemiBold' 
 //   },
-  
+
 //   tabContent: { marginTop: SPACING.md },
-  
+
 //   descriptionText: { 
 //     fontSize: 14, 
 //     fontFamily: 'Inter-Regular', 
@@ -4210,7 +4210,7 @@
 //     fontFamily: 'Inter-Regular', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   specRow: { 
 //     flexDirection: 'row', 
 //     justifyContent: 'space-between', 
@@ -4235,7 +4235,7 @@
 //     textAlign: 'center', 
 //     paddingVertical: SPACING.lg 
 //   },
-  
+
 //   ratingSummary: { 
 //     flexDirection: 'row', 
 //     gap: SPACING.lg, 
@@ -4290,7 +4290,7 @@
 //     color: COLORS.neutral[500], 
 //     width: 20 
 //   },
-  
+
 //   reviewCard: { 
 //     flexDirection: 'row', 
 //     paddingVertical: SPACING.md, 
@@ -4329,7 +4329,7 @@
 //     color: COLORS.neutral[400], 
 //     marginTop: 4 
 //   },
-  
+
 //   faqItem: { 
 //     paddingVertical: SPACING.md, 
 //     borderBottomWidth: 1, 
@@ -4347,7 +4347,7 @@
 //     marginTop: 4, 
 //     lineHeight: 18 
 //   },
-  
+
 //   deliveryCard: { 
 //     marginTop: SPACING.lg, 
 //     backgroundColor: COLORS.primary[50], 
@@ -4371,7 +4371,7 @@
 //     color: COLORS.neutral[500], 
 //     marginTop: 2 
 //   },
-  
+
 //   relatedSection: { marginTop: SPACING.xl },
 //   relatedTitle: { 
 //     fontSize: 18, 
@@ -4380,7 +4380,7 @@
 //     paddingHorizontal: SPACING.md, 
 //     marginBottom: SPACING.md 
 //   },
-  
+
 //   bottomBar: { 
 //     position: 'absolute', 
 //     bottom: 0, 
@@ -4499,7 +4499,7 @@
 //   const [selectedColor, setSelectedColor] = useState(0);
 //   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
 //   const [addingToCart, setAddingToCart] = useState(false);
-  
+
 //   // ─── State for color-image mapping ──────────────────────────────────────────
 //   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
 //   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
@@ -4510,9 +4510,9 @@
 //     console.log(`🔍 Loading product with ID: ${id}`);
 //     try {
 //       const p = await mockApi.getProduct(id);
-      
+
 //       setProduct(p || null);
-      
+
 //       // ─── Set up color-image mapping ────────────────────────────────────────────
 //       if (p?.color_images && Object.keys(p.color_images).length > 0) {
 //         const processedColorImages: Record<string, string[]> = {};
@@ -4523,7 +4523,7 @@
 //           }
 //         });
 //         setColorImagesMap(processedColorImages);
-        
+
 //         const firstColor = p.colors?.[0];
 //         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
 //           setCurrentColorImages(processedColorImages[firstColor]);
@@ -4533,7 +4533,7 @@
 //       } else {
 //         setCurrentColorImages(p?.images || []);
 //       }
-      
+
 //       if (p) {
 //         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
 //         setRelated(rels);
@@ -4562,7 +4562,7 @@
 //     setSelectedColor(index);
 //     const colors = product?.colors || [];
 //     const selectedColorHex = colors[index];
-    
+
 //     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
 //       setCurrentColorImages(colorImagesMap[selectedColorHex]);
 //     } else {
@@ -4582,28 +4582,28 @@
 
 // const handleAddCart = async () => {
 //   if (!product) return;
-  
+
 //   // IMPORTANT: Get customerId from auth state correctly
 //   const customerId = authState.user?.id;
-  
+
 //   console.log('📦 Current auth state:', authState);
 //   console.log('📦 Current customerId:', customerId);
 //   console.log('📦 User object:', authState.user);
-  
+
 //   // Check if user is logged in
 //   if (!authState.isAuthenticated || !customerId) {
 //     show('Please login to add items to cart', 'error');
 //     router.push('/(auth)/login');
 //     return;
 //   }
-  
+
 //   setAddingToCart(true);
 //   try {
 //     const productId = product.id;
 //     const productName = product.name;
 //     const productPrice = product.price;
 //     const productImage = product.images?.[0] || '';
-    
+
 //     console.log('📦 Adding to cart with customerId:', customerId);
 //     console.log('📦 Product data:', {
 //       id: productId,
@@ -4612,7 +4612,7 @@
 //       image: productImage,
 //       quantity: qty
 //     });
-    
+
 //     // Create cart item with the selected quantity
 //     const cartItem = {
 //       id: productId,
@@ -4623,13 +4623,13 @@
 //       quantity: qty,
 //       type: 'product' as const,
 //     };
-    
+
 //     // Add to cart with customerId - THIS MUST BE PASSED
 //     await addItem(cartItem, customerId);
-    
+
 //     // Refresh cart from server
 //     await fetchCart(customerId);
-    
+
 //     show(`${qty} item${qty > 1 ? 's' : ''} added to cart 🛒`);
 //   } catch (error: any) {
 //     console.error('Error adding to cart:', error);
@@ -4674,9 +4674,9 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -4686,32 +4686,32 @@
 //   const features = Array.isArray(product.features) ? product.features : [];
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
 //   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 //   const displayImages = currentColorImages.length > 0 ? currentColorImages : product.images;
 
 //   return (
 //     <View style={styles.container}>
 //       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
 //         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
 //         <View style={styles.galleryWrap}>
 //           {displayImages.length > 0 ? (
@@ -4746,7 +4746,7 @@
 //               ))}
 //             </View>
 //           )}
-          
+
 //           {colors.length > 0 && colors[selectedColor] && (
 //             <View style={styles.colorIndicator}>
 //               <View 
@@ -5071,7 +5071,7 @@
 
 // const styles = StyleSheet.create({
 //   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
 //   galleryWrap: { width: width, height: 350, position: 'relative' },
 //   galleryImage: { width, height: 350 },
 //   galleryDots: { 
@@ -5093,7 +5093,7 @@
 //     width: 24, 
 //     backgroundColor: COLORS.white 
 //   },
-  
+
 //   colorIndicator: {
 //     position: 'absolute',
 //     bottom: 50,
@@ -5120,7 +5120,7 @@
 //     fontSize: 12,
 //     fontFamily: 'Inter-Medium',
 //   },
-  
+
 //   floatingHeader: { 
 //     position: 'absolute', 
 //     left: SPACING.md, 
@@ -5140,7 +5140,7 @@
 //     ...SHADOWS.small 
 //   },
 //   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
+
 //   infoSection: { 
 //     backgroundColor: COLORS.white, 
 //     marginTop: -20, 
@@ -5148,7 +5148,7 @@
 //     borderTopRightRadius: RADIUS.xxl, 
 //     padding: SPACING.lg 
 //   },
-  
+
 //   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 //   categoryText: { 
 //     fontSize: 12, 
@@ -5168,7 +5168,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   productName: { 
 //     fontSize: 22, 
 //     fontFamily: 'Inter-Bold', 
@@ -5176,7 +5176,7 @@
 //     marginTop: 6, 
 //     lineHeight: 28 
 //   },
-  
+
 //   ratingRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -5209,7 +5209,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.success 
 //   },
-  
+
 //   priceRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -5238,7 +5238,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.error 
 //   },
-  
+
 //   // ─── Description Preview Styles ─────────────────────────────────────────────
 //   descriptionPreview: {
 //     marginTop: SPACING.md,
@@ -5264,7 +5264,7 @@
 //     color: COLORS.primary[600],
 //     marginTop: 4,
 //   },
-  
+
 //   colorSection: { marginTop: SPACING.lg },
 //   colorLabel: { 
 //     fontSize: 14, 
@@ -5317,7 +5317,7 @@
 //     paddingVertical: 2,
 //     borderRadius: RADIUS.sm,
 //   },
-  
+
 //   sizeSection: { marginTop: SPACING.lg },
 //   sizeLabel: { 
 //     fontSize: 14, 
@@ -5343,7 +5343,7 @@
 //     fontFamily: 'Inter-Medium', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   qtySection: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -5374,7 +5374,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   tabsRow: { 
 //     flexDirection: 'row', 
 //     marginTop: SPACING.xl, 
@@ -5399,9 +5399,9 @@
 //     color: COLORS.primary[700], 
 //     fontFamily: 'Inter-SemiBold' 
 //   },
-  
+
 //   tabContent: { marginTop: SPACING.md },
-  
+
 //   descriptionText: { 
 //     fontSize: 14, 
 //     fontFamily: 'Inter-Regular', 
@@ -5432,7 +5432,7 @@
 //     fontFamily: 'Inter-Regular', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   specRow: { 
 //     flexDirection: 'row', 
 //     justifyContent: 'space-between', 
@@ -5457,7 +5457,7 @@
 //     textAlign: 'center', 
 //     paddingVertical: SPACING.lg 
 //   },
-  
+
 //   ratingSummary: { 
 //     flexDirection: 'row', 
 //     gap: SPACING.lg, 
@@ -5512,7 +5512,7 @@
 //     color: COLORS.neutral[500], 
 //     width: 20 
 //   },
-  
+
 //   reviewCard: { 
 //     flexDirection: 'row', 
 //     paddingVertical: SPACING.md, 
@@ -5551,7 +5551,7 @@
 //     color: COLORS.neutral[400], 
 //     marginTop: 4 
 //   },
-  
+
 //   faqItem: { 
 //     paddingVertical: SPACING.md, 
 //     borderBottomWidth: 1, 
@@ -5569,7 +5569,7 @@
 //     marginTop: 4, 
 //     lineHeight: 18 
 //   },
-  
+
 //   deliveryCard: { 
 //     marginTop: SPACING.lg, 
 //     backgroundColor: COLORS.primary[50], 
@@ -5593,7 +5593,7 @@
 //     color: COLORS.neutral[500], 
 //     marginTop: 2 
 //   },
-  
+
 //   relatedSection: { marginTop: SPACING.xl },
 //   relatedTitle: { 
 //     fontSize: 18, 
@@ -5602,7 +5602,7 @@
 //     paddingHorizontal: SPACING.md, 
 //     marginBottom: SPACING.md 
 //   },
-  
+
 //   bottomBar: { 
 //     position: 'absolute', 
 //     bottom: 0, 
@@ -5722,7 +5722,7 @@
 //   const [selectedColor, setSelectedColor] = useState(0);
 //   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
 //   const [addingToCart, setAddingToCart] = useState(false);
-  
+
 //   // ─── State for color-image mapping ──────────────────────────────────────────
 //   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
 //   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
@@ -5742,9 +5742,9 @@
 //     console.log(`🔍 Loading product with ID: ${id}`);
 //     try {
 //       const p = await mockApi.getProduct(id);
-      
+
 //       setProduct(p || null);
-      
+
 //       // ─── Set up color-image mapping ────────────────────────────────────────────
 //       if (p?.color_images && Object.keys(p.color_images).length > 0) {
 //         const processedColorImages: Record<string, string[]> = {};
@@ -5755,7 +5755,7 @@
 //           }
 //         });
 //         setColorImagesMap(processedColorImages);
-        
+
 //         const firstColor = p.colors?.[0];
 //         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
 //           setCurrentColorImages(processedColorImages[firstColor]);
@@ -5765,7 +5765,7 @@
 //       } else {
 //         setCurrentColorImages(p?.images || []);
 //       }
-      
+
 //       if (p) {
 //         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
 //         setRelated(rels);
@@ -5784,7 +5784,7 @@
 //     setSelectedColor(index);
 //     const colors = product?.colors || [];
 //     const selectedColorHex = colors[index];
-    
+
 //     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
 //       setCurrentColorImages(colorImagesMap[selectedColorHex]);
 //     } else {
@@ -5800,10 +5800,10 @@
 
 // const handleAddCart = async () => {
 //   if (!product) return;
-  
+
 //   // Try to get customerId from auth state first
 //   let customerId = authState.user?.id;
-  
+
 //   // If auth state doesn't have it, try to get from localStorage directly
 //   if (!customerId) {
 //     try {
@@ -5817,7 +5817,7 @@
 //       console.error('❌ Failed to get user from localStorage:', error);
 //     }
 //   }
-  
+
 //   console.log('📦 Auth state in product screen:', {
 //     isAuthenticated: authState.isAuthenticated,
 //     user: authState.user,
@@ -5826,7 +5826,7 @@
 //     customerIdFromState: authState.user?.id,
 //     customerIdFromStorage: customerId
 //   });
-  
+
 //   // If still no customerId, user is not logged in
 //   if (!customerId) {
 //     console.log('❌ No customerId found');
@@ -5834,14 +5834,14 @@
 //     router.push('/(auth)/login');
 //     return;
 //   }
-  
+
 //   setAddingToCart(true);
 //   try {
 //     const productId = product.id;
 //     const productName = product.name;
 //     const productPrice = product.price;
 //     const productImage = product.images?.[0] || '';
-    
+
 //     console.log('📦 Adding to cart with customerId:', customerId);
 //     console.log('📦 Product data:', {
 //       id: productId,
@@ -5850,7 +5850,7 @@
 //       image: productImage,
 //       quantity: qty
 //     });
-    
+
 //     // Create cart item with the selected quantity
 //     const cartItem = {
 //       id: `${productId}_${Date.now()}`,
@@ -5861,14 +5861,14 @@
 //       quantity: qty,
 //       type: 'product' as const,
 //     };
-    
+
 //     // Pass customerId explicitly
 //     await addItem(cartItem, customerId);
-    
+
 //     // Refresh cart from server
 //     const updatedCart = await fetchCart(customerId);
 //     console.log('📦 Cart after adding:', updatedCart);
-    
+
 //     show(`${qty} item${qty > 1 ? 's' : ''} added to cart 🛒`);
 //   } catch (error: any) {
 //     console.error('❌ Error adding to cart:', error);
@@ -5912,9 +5912,9 @@
 //   }
 
 //   const isWishlisted = has(product.id);
-  
+
 //   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
 //   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
 //     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
 //     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -5924,32 +5924,32 @@
 //   const features = Array.isArray(product.features) ? product.features : [];
 //   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
 //   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
 //   const getSpecsArray = () => {
 //     const specs = product.specifications;
 //     if (!specs) return [];
-    
+
 //     if (Array.isArray(specs)) {
 //       return specs;
 //     }
-    
+
 //     if (typeof specs === 'object') {
 //       return Object.entries(specs).map(([key, value]) => ({
 //         label: key.charAt(0).toUpperCase() + key.slice(1),
 //         value: String(value)
 //       }));
 //     }
-    
+
 //     return [];
 //   };
-  
+
 //   const specifications = getSpecsArray();
 //   const displayImages = currentColorImages.length > 0 ? currentColorImages : product.images;
 
 //   return (
 //     <View style={styles.container}>
 //       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
 //         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
 //         <View style={styles.galleryWrap}>
 //           {displayImages.length > 0 ? (
@@ -5984,7 +5984,7 @@
 //               ))}
 //             </View>
 //           )}
-          
+
 //           {colors.length > 0 && colors[selectedColor] && (
 //             <View style={styles.colorIndicator}>
 //               <View 
@@ -6335,7 +6335,7 @@
 
 // const styles = StyleSheet.create({
 //   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
 //   galleryWrap: { width: width, height: 350, position: 'relative' },
 //   galleryImage: { width, height: 350 },
 //   galleryDots: { 
@@ -6357,7 +6357,7 @@
 //     width: 24, 
 //     backgroundColor: COLORS.white 
 //   },
-  
+
 //   colorIndicator: {
 //     position: 'absolute',
 //     bottom: 50,
@@ -6384,7 +6384,7 @@
 //     fontSize: 12,
 //     fontFamily: 'Inter-Medium',
 //   },
-  
+
 //   floatingHeader: { 
 //     position: 'absolute', 
 //     left: SPACING.md, 
@@ -6404,7 +6404,7 @@
 //     ...SHADOWS.small 
 //   },
 //   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
+
 //   infoSection: { 
 //     backgroundColor: COLORS.white, 
 //     marginTop: -20, 
@@ -6412,7 +6412,7 @@
 //     borderTopRightRadius: RADIUS.xxl, 
 //     padding: SPACING.lg 
 //   },
-  
+
 //   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 //   categoryText: { 
 //     fontSize: 12, 
@@ -6432,7 +6432,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   productName: { 
 //     fontSize: 22, 
 //     fontFamily: 'Inter-Bold', 
@@ -6440,7 +6440,7 @@
 //     marginTop: 6, 
 //     lineHeight: 28 
 //   },
-  
+
 //   ratingRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -6473,7 +6473,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.success 
 //   },
-  
+
 //   priceRow: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -6502,7 +6502,7 @@
 //     fontFamily: 'Inter-Bold', 
 //     color: COLORS.error 
 //   },
-  
+
 //   descriptionPreview: {
 //     marginTop: SPACING.md,
 //     paddingTop: SPACING.md,
@@ -6527,7 +6527,7 @@
 //     color: COLORS.primary[600],
 //     marginTop: 4,
 //   },
-  
+
 //   colorSection: { marginTop: SPACING.lg },
 //   colorLabel: { 
 //     fontSize: 14, 
@@ -6580,7 +6580,7 @@
 //     paddingVertical: 2,
 //     borderRadius: RADIUS.sm,
 //   },
-  
+
 //   sizeSection: { marginTop: SPACING.lg },
 //   sizeLabel: { 
 //     fontSize: 14, 
@@ -6606,7 +6606,7 @@
 //     fontFamily: 'Inter-Medium', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   qtySection: { 
 //     flexDirection: 'row', 
 //     alignItems: 'center', 
@@ -6637,7 +6637,7 @@
 //     fontFamily: 'Inter-SemiBold', 
 //     color: COLORS.neutral[900] 
 //   },
-  
+
 //   tabsRow: { 
 //     flexDirection: 'row', 
 //     marginTop: SPACING.xl, 
@@ -6662,9 +6662,9 @@
 //     color: COLORS.primary[700], 
 //     fontFamily: 'Inter-SemiBold' 
 //   },
-  
+
 //   tabContent: { marginTop: SPACING.md },
-  
+
 //   descriptionText: { 
 //     fontSize: 14, 
 //     fontFamily: 'Inter-Regular', 
@@ -6695,7 +6695,7 @@
 //     fontFamily: 'Inter-Regular', 
 //     color: COLORS.neutral[700] 
 //   },
-  
+
 //   specRow: { 
 //     flexDirection: 'row', 
 //     justifyContent: 'space-between', 
@@ -6720,7 +6720,7 @@
 //     textAlign: 'center', 
 //     paddingVertical: SPACING.lg 
 //   },
-  
+
 //   ratingSummary: { 
 //     flexDirection: 'row', 
 //     gap: SPACING.lg, 
@@ -6775,7 +6775,7 @@
 //     color: COLORS.neutral[500], 
 //     width: 20 
 //   },
-  
+
 //   reviewCard: { 
 //     flexDirection: 'row', 
 //     paddingVertical: SPACING.md, 
@@ -6814,7 +6814,7 @@
 //     color: COLORS.neutral[400], 
 //     marginTop: 4 
 //   },
-  
+
 //   faqItem: { 
 //     paddingVertical: SPACING.md, 
 //     borderBottomWidth: 1, 
@@ -6832,7 +6832,7 @@
 //     marginTop: 4, 
 //     lineHeight: 18 
 //   },
-  
+
 //   deliveryCard: { 
 //     marginTop: SPACING.lg, 
 //     backgroundColor: COLORS.primary[50], 
@@ -6856,7 +6856,7 @@
 //     color: COLORS.neutral[500], 
 //     marginTop: 2 
 //   },
-  
+
 //   relatedSection: { marginTop: SPACING.xl },
 //   relatedTitle: { 
 //     fontSize: 18, 
@@ -6865,7 +6865,7 @@
 //     paddingHorizontal: SPACING.md, 
 //     marginBottom: SPACING.md 
 //   },
-  
+
 //   bottomBar: { 
 //     position: 'absolute', 
 //     bottom: 0, 
@@ -6985,7 +6985,7 @@ export default function ProductDetailScreen() {
   const [selectedColor, setSelectedColor] = useState(0);
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
   const [addingToCart, setAddingToCart] = useState(false);
-  
+
   const [colorImagesMap, setColorImagesMap] = useState<Record<string, string[]>>({});
   const [currentColorImages, setCurrentColorImages] = useState<string[]>([]);
 
@@ -7004,9 +7004,9 @@ export default function ProductDetailScreen() {
     console.log(`🔍 Loading product with ID: ${id}`);
     try {
       const p = await mockApi.getProduct(id);
-      
+
       setProduct(p || null);
-      
+
       if (p?.color_images && Object.keys(p.color_images).length > 0) {
         const processedColorImages: Record<string, string[]> = {};
         Object.keys(p.color_images).forEach(color => {
@@ -7016,7 +7016,7 @@ export default function ProductDetailScreen() {
           }
         });
         setColorImagesMap(processedColorImages);
-        
+
         const firstColor = p.colors?.[0];
         if (firstColor && processedColorImages[firstColor] && processedColorImages[firstColor].length > 0) {
           setCurrentColorImages(processedColorImages[firstColor]);
@@ -7026,7 +7026,7 @@ export default function ProductDetailScreen() {
       } else {
         setCurrentColorImages(p?.images || []);
       }
-      
+
       if (p) {
         const rels = (await Promise.all(p.relatedIds.map((rid) => mockApi.getProduct(rid)))).filter(Boolean) as Product[];
         setRelated(rels);
@@ -7044,7 +7044,7 @@ export default function ProductDetailScreen() {
     setSelectedColor(index);
     const colors = product?.colors || [];
     const selectedColorHex = colors[index];
-    
+
     if (selectedColorHex && colorImagesMap[selectedColorHex] && colorImagesMap[selectedColorHex].length > 0) {
       setCurrentColorImages(colorImagesMap[selectedColorHex]);
     } else {
@@ -7056,9 +7056,9 @@ export default function ProductDetailScreen() {
   // ─── ADD TO CART ─────────────────────────────────────────────────────────────
   const handleAddCart = async () => {
     if (!product) return;
-    
+
     let customerId = authState.user?.id;
-    
+
     if (!customerId) {
       try {
         const userStr = localStorage.getItem('auth_user');
@@ -7071,7 +7071,7 @@ export default function ProductDetailScreen() {
         console.error('❌ Failed to get user from localStorage:', error);
       }
     }
-    
+
     console.log('📦 Auth state in product screen:', {
       isAuthenticated: authState.isAuthenticated,
       user: authState.user,
@@ -7080,21 +7080,21 @@ export default function ProductDetailScreen() {
       customerIdFromState: authState.user?.id,
       customerIdFromStorage: customerId
     });
-    
+
     if (!customerId) {
       console.log('❌ No customerId found');
       show('Please login to add items to cart', 'error');
       router.push('/(auth)/login');
       return;
     }
-    
+
     setAddingToCart(true);
     try {
       const productId = product.id;
       const productName = product.name;
       const productPrice = product.price;
       const productImage = product.images?.[0] || '';
-      
+
       console.log('📦 Adding to cart with customerId:', customerId);
       console.log('📦 Product data:', {
         id: productId,
@@ -7103,7 +7103,7 @@ export default function ProductDetailScreen() {
         image: productImage,
         quantity: qty
       });
-      
+
       const cartItem = {
         id: `${productId}_${Date.now()}`,
         productId: productId,
@@ -7113,12 +7113,12 @@ export default function ProductDetailScreen() {
         quantity: qty,
         type: 'product' as const,
       };
-      
+
       await addItem(cartItem, customerId);
-      
+
       const updatedCart = await fetchCart(customerId);
       console.log('📦 Cart after adding:', updatedCart);
-      
+
       show(`${qty} item${qty > 1 ? 's' : ''} added to cart 🛒`);
     } catch (error: any) {
       console.error('❌ Error adding to cart:', error);
@@ -7137,7 +7137,7 @@ export default function ProductDetailScreen() {
   const handleShare = async () => {
     try {
       await Share.share({ message: `Check out ${product?.name} on Super Tent House!` });
-    } catch {}
+    } catch { }
   };
 
   if (loading) {
@@ -7163,9 +7163,9 @@ export default function ProductDetailScreen() {
   }
 
   const isWishlisted = has(product.id);
-  
+
   const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-  
+
   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => {
     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
     const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -7175,32 +7175,32 @@ export default function ProductDetailScreen() {
   const features = Array.isArray(product.features) ? product.features : [];
   const colors = Array.isArray(product.colors) ? product.colors : ['#6C63FF'];
   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  
+
   const getSpecsArray = () => {
     const specs = product.specifications;
     if (!specs) return [];
-    
+
     if (Array.isArray(specs)) {
       return specs;
     }
-    
+
     if (typeof specs === 'object') {
       return Object.entries(specs).map(([key, value]) => ({
         label: key.charAt(0).toUpperCase() + key.slice(1),
         value: String(value)
       }));
     }
-    
+
     return [];
   };
-  
+
   const specifications = getSpecsArray();
   const displayImages = currentColorImages.length > 0 ? currentColorImages : product.images;
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
+
         {/* ─── Image Gallery ────────────────────────────────────────────────────── */}
         <View style={styles.galleryWrap}>
           {displayImages.length > 0 ? (
@@ -7213,9 +7213,9 @@ export default function ProductDetailScreen() {
               scrollEventThrottle={16}
               keyExtractor={(_, i) => i.toString()}
               renderItem={({ item }) => (
-                <Image 
-                  source={{ uri: item }} 
-                  style={styles.galleryImage} 
+                <Image
+                  source={{ uri: item }}
+                  style={styles.galleryImage}
                   resizeMode="cover"
                   onError={(e) => {
                     console.log('Image load error:', item);
@@ -7235,11 +7235,11 @@ export default function ProductDetailScreen() {
               ))}
             </View>
           )}
-          
+
           {colors.length > 0 && colors[selectedColor] && (
             <View style={styles.colorIndicator}>
-              <View 
-                style={[styles.colorIndicatorDot, { backgroundColor: colors[selectedColor] }]} 
+              <View
+                style={[styles.colorIndicatorDot, { backgroundColor: colors[selectedColor] }]}
               />
               <Text style={styles.colorIndicatorText}>
                 {getColorName(colors[selectedColor])}
@@ -7257,9 +7257,9 @@ export default function ProductDetailScreen() {
             <TouchableOpacity style={styles.floatBtn} onPress={handleShare}>
               <Share2 color={COLORS.neutral[800]} size={20} />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.floatBtn} 
-              onPress={() => { 
+            <TouchableOpacity
+              style={styles.floatBtn}
+              onPress={() => {
                 const customerId = authState.user?.id;
                 const productData = {
                   name: product.name,
@@ -7267,13 +7267,13 @@ export default function ProductDetailScreen() {
                   image: product.images?.[0] || '',
                 };
                 toggle(product.id, customerId, productData);
-                show(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'info'); 
+                show(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'info');
               }}
             >
-              <Heart 
-                color={isWishlisted ? COLORS.error : COLORS.neutral[800]} 
-                size={20} 
-                fill={isWishlisted ? COLORS.error : 'transparent'} 
+              <Heart
+                color={isWishlisted ? COLORS.error : COLORS.neutral[800]}
+                size={20}
+                fill={isWishlisted ? COLORS.error : 'transparent'}
               />
             </TouchableOpacity>
           </View>
@@ -7325,7 +7325,7 @@ export default function ProductDetailScreen() {
           {colors.length > 0 && (
             <View style={styles.colorSection}>
               <Text style={styles.colorLabel}>
-                Available Colors 
+                Available Colors
                 <Text style={styles.colorCount}>
                   ({colors.length} {colors.length === 1 ? 'color' : 'colors'})
                 </Text>
@@ -7335,16 +7335,16 @@ export default function ProductDetailScreen() {
                   <TouchableOpacity
                     key={i}
                     style={[
-                      styles.colorDot, 
+                      styles.colorDot,
                       { backgroundColor: c },
                       selectedColor === i && styles.colorDotActive
                     ]}
                     onPress={() => handleColorSelect(i)}
                   >
                     {selectedColor === i && (
-                      <Check 
-                        color={isLightColor(c) ? COLORS.neutral[900] : COLORS.white} 
-                        size={16} 
+                      <Check
+                        color={isLightColor(c) ? COLORS.neutral[900] : COLORS.white}
+                        size={16}
                       />
                     )}
                   </TouchableOpacity>
@@ -7452,7 +7452,7 @@ export default function ProductDetailScreen() {
                 <View style={styles.ratingBig}>
                   <Text style={styles.ratingBigValue}>{product.rating.toFixed(1)}</Text>
                   <View style={styles.ratingStars}>
-                    {[1,2,3,4,5].map(s => <Star key={s} size={14} color={COLORS.gold[400]} fill={s <= Math.round(product.rating) ? COLORS.gold[400] : 'transparent'} />)}
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} color={COLORS.gold[400]} fill={s <= Math.round(product.rating) ? COLORS.gold[400] : 'transparent'} />)}
                   </View>
                   <Text style={styles.ratingCount}>{product.reviewCount} reviews</Text>
                 </View>
@@ -7476,7 +7476,7 @@ export default function ProductDetailScreen() {
                       <View style={styles.reviewHeader}>
                         <Text style={styles.reviewName}>{review.userName}</Text>
                         <View style={styles.ratingStars}>
-                          {[1,2,3,4,5].map(s => <Star key={s} size={11} color={COLORS.gold[400]} fill={s <= review.rating ? COLORS.gold[400] : 'transparent'} />)}
+                          {[1, 2, 3, 4, 5].map(s => <Star key={s} size={11} color={COLORS.gold[400]} fill={s <= review.rating ? COLORS.gold[400] : 'transparent'} />)}
                         </View>
                       </View>
                       <Text style={styles.reviewComment}>{review.comment}</Text>
@@ -7545,9 +7545,9 @@ export default function ProductDetailScreen() {
 
       {/* ─── Bottom Actions ────────────────────────────────────────────────────── */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity 
-          style={styles.wishAction} 
-          onPress={() => { 
+        <TouchableOpacity
+          style={styles.wishAction}
+          onPress={() => {
             const customerId = authState.user?.id;
             const productData = {
               name: product.name,
@@ -7555,36 +7555,37 @@ export default function ProductDetailScreen() {
               image: product.images?.[0] || '',
             };
             toggle(product.id, customerId, productData);
-            show(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'info'); 
+            show(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'info');
           }}
         >
-          <Heart 
-            color={isWishlisted ? COLORS.error : COLORS.neutral[600]} 
-            size={22} 
-            fill={isWishlisted ? COLORS.error : 'transparent'} 
+          <Heart
+            color={isWishlisted ? COLORS.error : COLORS.neutral[600]}
+            size={22}
+            fill={isWishlisted ? COLORS.error : 'transparent'}
           />
         </TouchableOpacity>
-        <Button 
-          onPress={handleAddCart} 
-          variant="outline" 
-          size="lg" 
-          style={{ flex: 1 }}
-          loading={addingToCart}
-          disabled={addingToCart}
-        >
-          <ShoppingBag size={18} color={COLORS.primary[700]} /> 
-          {addingToCart ? 'Adding...' : 'Add to Cart'}
-        </Button>
-        <Button 
-          onPress={handleBuyNow} 
-          variant="gold" 
-          size="lg" 
-          style={{ flex: 1 }}
-          loading={addingToCart}
-          disabled={addingToCart}
-        >
-          Buy Now
-        </Button>
+     <Button 
+  onPress={handleAddCart} 
+  variant="outline" 
+  size="lg" 
+  style={{ flex: 1, paddingHorizontal: 0 }}
+  contentStyle={{ paddingHorizontal: 8 }}
+  loading={addingToCart}
+  disabled={addingToCart}
+>
+  {addingToCart ? 'Adding...' : 'Add to Cart'}
+</Button>
+<Button 
+  onPress={handleBuyNow} 
+  variant="gold" 
+  size="lg" 
+  style={{ flex: 1, paddingHorizontal: 0 }}
+  contentStyle={{ paddingHorizontal: 8 }}
+  loading={addingToCart}
+  disabled={addingToCart}
+>
+  Buy Now
+</Button>
       </View>
     </View>
   );
@@ -7592,29 +7593,29 @@ export default function ProductDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.offWhite },
-  
+
   galleryWrap: { width: width, height: 350, position: 'relative' },
   galleryImage: { width, height: 350 },
-  galleryDots: { 
-    position: 'absolute', 
-    bottom: 16, 
-    left: 0, 
-    right: 0, 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    gap: 6 
+  galleryDots: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6
   },
-  galleryDot: { 
-    width: 6, 
-    height: 6, 
-    borderRadius: 3, 
-    backgroundColor: 'rgba(255,255,255,0.5)' 
+  galleryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.5)'
   },
-  galleryDotActive: { 
-    width: 24, 
-    backgroundColor: COLORS.white 
+  galleryDotActive: {
+    width: 24,
+    backgroundColor: COLORS.white
   },
-  
+
   colorIndicator: {
     position: 'absolute',
     bottom: 50,
@@ -7641,125 +7642,125 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter-Medium',
   },
-  
-  floatingHeader: { 
-    position: 'absolute', 
-    left: SPACING.md, 
-    right: SPACING.md, 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    zIndex: 10 
+
+  floatingHeader: {
+    position: 'absolute',
+    left: SPACING.md,
+    right: SPACING.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 10
   },
-  floatBtn: { 
-    width: 42, 
-    height: 42, 
-    borderRadius: 21, 
-    backgroundColor: 'rgba(255,255,255,0.9)', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    ...SHADOWS.small 
+  floatBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...SHADOWS.small
   },
   floatBtnRow: { flexDirection: 'row', gap: 8 },
-  
-  infoSection: { 
-    backgroundColor: COLORS.white, 
-    marginTop: -20, 
-    borderTopLeftRadius: RADIUS.xxl, 
-    borderTopRightRadius: RADIUS.xxl, 
-    padding: SPACING.lg 
+
+  infoSection: {
+    backgroundColor: COLORS.white,
+    marginTop: -20,
+    borderTopLeftRadius: RADIUS.xxl,
+    borderTopRightRadius: RADIUS.xxl,
+    padding: SPACING.lg
   },
-  
+
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  categoryText: { 
-    fontSize: 12, 
-    fontFamily: 'Inter-Medium', 
-    color: COLORS.neutral[500], 
-    textTransform: 'uppercase', 
-    letterSpacing: 1 
+  categoryText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[500],
+    textTransform: 'uppercase',
+    letterSpacing: 1
   },
-  bestBadge: { 
-    backgroundColor: COLORS.gold[400], 
-    paddingHorizontal: 8, 
-    paddingVertical: 2, 
-    borderRadius: RADIUS.sm 
+  bestBadge: {
+    backgroundColor: COLORS.gold[400],
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm
   },
-  bestText: { 
-    fontSize: 9, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.neutral[900] 
+  bestText: {
+    fontSize: 9,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900]
   },
-  
-  productName: { 
-    fontSize: 22, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.neutral[900], 
-    marginTop: 6, 
-    lineHeight: 28 
+
+  productName: {
+    fontSize: 22,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+    marginTop: 6,
+    lineHeight: 28
   },
-  
-  ratingRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 8, 
-    marginTop: SPACING.sm 
+
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: SPACING.sm
   },
-  reviewCount: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500] 
+  reviewCount: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500]
   },
-  stockBadge: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 4, 
-    backgroundColor: COLORS.success + '20', 
-    paddingHorizontal: 8, 
-    paddingVertical: 3, 
-    borderRadius: RADIUS.sm, 
-    marginLeft: 'auto' 
+  stockBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.success + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.sm,
+    marginLeft: 'auto'
   },
-  stockDot: { 
-    width: 6, 
-    height: 6, 
-    borderRadius: 3, 
-    backgroundColor: COLORS.success 
+  stockDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.success
   },
-  stockText: { 
-    fontSize: 11, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.success 
+  stockText: {
+    fontSize: 11,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.success
   },
-  
-  priceRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 10, 
-    marginTop: SPACING.md 
+
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: SPACING.md
   },
-  price: { 
-    fontSize: 26, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.neutral[900] 
+  price: {
+    fontSize: 26,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900]
   },
-  originalPrice: { 
-    fontSize: 16, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[400], 
-    textDecorationLine: 'line-through' 
+  originalPrice: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[400],
+    textDecorationLine: 'line-through'
   },
-  discountBadge: { 
-    backgroundColor: COLORS.error + '20', 
-    paddingHorizontal: 8, 
-    paddingVertical: 3, 
-    borderRadius: RADIUS.sm 
+  discountBadge: {
+    backgroundColor: COLORS.error + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.sm
   },
-  discountText: { 
-    fontSize: 12, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.error 
+  discountText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.error
   },
-  
+
   descriptionPreview: {
     marginTop: SPACING.md,
     paddingTop: SPACING.md,
@@ -7784,13 +7785,13 @@ const styles = StyleSheet.create({
     color: COLORS.primary[600],
     marginTop: 4,
   },
-  
+
   colorSection: { marginTop: SPACING.lg },
-  colorLabel: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[800], 
-    marginBottom: SPACING.sm 
+  colorLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[800],
+    marginBottom: SPACING.sm
   },
   colorCount: {
     fontSize: 12,
@@ -7798,23 +7799,23 @@ const styles = StyleSheet.create({
     color: COLORS.neutral[500],
     marginLeft: 4,
   },
-  colorRow: { 
-    flexDirection: 'row', 
-    gap: 10, 
-    flexWrap: 'wrap' 
+  colorRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap'
   },
-  colorDot: { 
-    width: 36, 
-    height: 36, 
-    borderRadius: 18, 
-    borderWidth: 2, 
-    borderColor: COLORS.neutral[200], 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  colorDot: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: COLORS.neutral[200],
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  colorDotActive: { 
-    borderColor: COLORS.primary[600], 
-    borderWidth: 3 
+  colorDotActive: {
+    borderColor: COLORS.primary[600],
+    borderWidth: 3
   },
   selectedColorInfo: {
     flexDirection: 'row',
@@ -7823,10 +7824,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     flexWrap: 'wrap',
   },
-  selectedColorName: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[600] 
+  selectedColorName: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[600]
   },
   selectedColorImageCount: {
     fontSize: 12,
@@ -7837,314 +7838,314 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: RADIUS.sm,
   },
-  
+
   sizeSection: { marginTop: SPACING.lg },
-  sizeLabel: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[800], 
-    marginBottom: SPACING.sm 
+  sizeLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[800],
+    marginBottom: SPACING.sm
   },
-  sizeRow: { 
-    flexDirection: 'row', 
-    gap: 8, 
-    flexWrap: 'wrap' 
+  sizeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap'
   },
-  sizeTag: { 
-    paddingHorizontal: 14, 
-    paddingVertical: 6, 
-    backgroundColor: COLORS.neutral[100], 
-    borderRadius: RADIUS.pill, 
-    borderWidth: 1, 
-    borderColor: COLORS.neutral[200] 
+  sizeTag: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: COLORS.neutral[100],
+    borderRadius: RADIUS.pill,
+    borderWidth: 1,
+    borderColor: COLORS.neutral[200]
   },
-  sizeText: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Medium', 
-    color: COLORS.neutral[700] 
+  sizeText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[700]
   },
-  
-  qtySection: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    marginTop: SPACING.lg 
+
+  qtySection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: SPACING.lg
   },
-  qtyLabel: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[800] 
+  qtyLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[800]
   },
-  qtyControl: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 16, 
-    backgroundColor: COLORS.neutral[100], 
-    borderRadius: RADIUS.lg, 
-    paddingHorizontal: 4 
+  qtyControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    backgroundColor: COLORS.neutral[100],
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: 4
   },
-  qtyBtn: { 
-    width: 36, 
-    height: 36, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  qtyBtn: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  qtyValue: { 
-    fontSize: 16, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900] 
+  qtyValue: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900]
   },
-  
-  tabsRow: { 
-    flexDirection: 'row', 
-    marginTop: SPACING.xl, 
-    borderBottomWidth: 1, 
-    borderBottomColor: COLORS.neutral[200] 
+
+  tabsRow: {
+    flexDirection: 'row',
+    marginTop: SPACING.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[200]
   },
-  tab: { 
-    flex: 1, 
-    paddingVertical: SPACING.sm, 
-    alignItems: 'center' 
+  tab: {
+    flex: 1,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center'
   },
-  tabActive: { 
-    borderBottomWidth: 2, 
-    borderBottomColor: COLORS.primary[700] 
+  tabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.primary[700]
   },
-  tabText: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Medium', 
-    color: COLORS.neutral[500] 
+  tabText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[500]
   },
-  tabTextActive: { 
-    color: COLORS.primary[700], 
-    fontFamily: 'Inter-SemiBold' 
+  tabTextActive: {
+    color: COLORS.primary[700],
+    fontFamily: 'Inter-SemiBold'
   },
-  
+
   tabContent: { marginTop: SPACING.md },
-  
-  descriptionText: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[600], 
-    lineHeight: 22 
+
+  descriptionText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[600],
+    lineHeight: 22
   },
-  featuresTitle: { 
-    fontSize: 15, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900], 
-    marginTop: SPACING.md, 
-    marginBottom: SPACING.sm 
+  featuresTitle: {
+    fontSize: 15,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900],
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm
   },
-  featureRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 10, 
-    marginBottom: 8 
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8
   },
-  featureDot: { 
-    width: 6, 
-    height: 6, 
-    borderRadius: 3, 
-    backgroundColor: COLORS.gold[400] 
+  featureDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.gold[400]
   },
-  featureText: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[700] 
+  featureText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[700]
   },
-  
-  specRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    paddingVertical: SPACING.sm, 
-    borderBottomWidth: 1, 
-    borderBottomColor: COLORS.neutral[100] 
+
+  specRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[100]
   },
-  specLabel: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500] 
+  specLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500]
   },
-  specValue: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900] 
+  specValue: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900]
   },
-  noDataText: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500], 
-    textAlign: 'center', 
-    paddingVertical: SPACING.lg 
+  noDataText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    textAlign: 'center',
+    paddingVertical: SPACING.lg
   },
-  
-  ratingSummary: { 
-    flexDirection: 'row', 
-    gap: SPACING.lg, 
-    marginBottom: SPACING.lg, 
-    padding: SPACING.md, 
-    backgroundColor: COLORS.neutral[50], 
-    borderRadius: RADIUS.lg 
+
+  ratingSummary: {
+    flexDirection: 'row',
+    gap: SPACING.lg,
+    marginBottom: SPACING.lg,
+    padding: SPACING.md,
+    backgroundColor: COLORS.neutral[50],
+    borderRadius: RADIUS.lg
   },
   ratingBig: { alignItems: 'center' },
-  ratingBigValue: { 
-    fontSize: 36, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.neutral[900] 
+  ratingBigValue: {
+    fontSize: 36,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900]
   },
-  ratingStars: { 
-    flexDirection: 'row', 
-    gap: 2, 
-    marginTop: 4 
+  ratingStars: {
+    flexDirection: 'row',
+    gap: 2,
+    marginTop: 4
   },
-  ratingCount: { 
-    fontSize: 12, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500], 
-    marginTop: 4 
+  ratingCount: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    marginTop: 4
   },
   ratingBreakdown: { flex: 1, gap: 4 },
-  breakdownRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 8 
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
   },
-  breakdownLabel: { 
-    fontSize: 12, 
-    fontFamily: 'Inter-Medium', 
-    color: COLORS.neutral[600], 
-    width: 28 
+  breakdownLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: COLORS.neutral[600],
+    width: 28
   },
-  breakdownBar: { 
-    flex: 1, 
-    height: 6, 
-    borderRadius: 3, 
-    backgroundColor: COLORS.neutral[200] 
+  breakdownBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.neutral[200]
   },
-  breakdownFill: { 
-    height: '100%', 
-    borderRadius: 3, 
-    backgroundColor: COLORS.gold[400] 
+  breakdownFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: COLORS.gold[400]
   },
-  breakdownCount: { 
-    fontSize: 11, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500], 
-    width: 20 
+  breakdownCount: {
+    fontSize: 11,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    width: 20
   },
-  
-  reviewCard: { 
-    flexDirection: 'row', 
-    paddingVertical: SPACING.md, 
-    borderBottomWidth: 1, 
-    borderBottomColor: COLORS.neutral[100] 
+
+  reviewCard: {
+    flexDirection: 'row',
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[100]
   },
-  reviewAvatar: { 
-    width: 40, 
-    height: 40, 
-    borderRadius: 20 
+  reviewAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20
   },
-  reviewBody: { 
-    flex: 1, 
-    marginLeft: SPACING.md 
+  reviewBody: {
+    flex: 1,
+    marginLeft: SPACING.md
   },
-  reviewHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center' 
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
-  reviewName: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900] 
+  reviewName: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900]
   },
-  reviewComment: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[600], 
-    marginTop: 4, 
-    lineHeight: 18 
+  reviewComment: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[600],
+    marginTop: 4,
+    lineHeight: 18
   },
-  reviewDate: { 
-    fontSize: 11, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[400], 
-    marginTop: 4 
+  reviewDate: {
+    fontSize: 11,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[400],
+    marginTop: 4
   },
-  
-  faqItem: { 
-    paddingVertical: SPACING.md, 
-    borderBottomWidth: 1, 
-    borderBottomColor: COLORS.neutral[100] 
+
+  faqItem: {
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.neutral[100]
   },
-  faqQ: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900] 
+  faqQ: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900]
   },
-  faqA: { 
-    fontSize: 13, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[600], 
-    marginTop: 4, 
-    lineHeight: 18 
+  faqA: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[600],
+    marginTop: 4,
+    lineHeight: 18
   },
-  
-  deliveryCard: { 
-    marginTop: SPACING.lg, 
-    backgroundColor: COLORS.primary[50], 
-    borderRadius: RADIUS.xl, 
-    padding: SPACING.md, 
-    gap: SPACING.md 
+
+  deliveryCard: {
+    marginTop: SPACING.lg,
+    backgroundColor: COLORS.primary[50],
+    borderRadius: RADIUS.xl,
+    padding: SPACING.md,
+    gap: SPACING.md
   },
-  deliveryRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 12 
+  deliveryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12
   },
-  deliveryTitle: { 
-    fontSize: 14, 
-    fontFamily: 'Inter-SemiBold', 
-    color: COLORS.neutral[900] 
+  deliveryTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: COLORS.neutral[900]
   },
-  deliveryDesc: { 
-    fontSize: 12, 
-    fontFamily: 'Inter-Regular', 
-    color: COLORS.neutral[500], 
-    marginTop: 2 
+  deliveryDesc: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: COLORS.neutral[500],
+    marginTop: 2
   },
-  
+
   relatedSection: { marginTop: SPACING.xl },
-  relatedTitle: { 
-    fontSize: 18, 
-    fontFamily: 'Inter-Bold', 
-    color: COLORS.neutral[900], 
-    paddingHorizontal: SPACING.md, 
-    marginBottom: SPACING.md 
+  relatedTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: COLORS.neutral[900],
+    paddingHorizontal: SPACING.md,
+    marginBottom: SPACING.md
   },
-  
-  bottomBar: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: SPACING.sm, 
-    backgroundColor: COLORS.white, 
-    paddingHorizontal: SPACING.md, 
-    paddingVertical: SPACING.md, 
-    paddingBottom: 30, 
-    borderTopWidth: 1, 
-    borderTopColor: COLORS.neutral[100], 
-    ...SHADOWS.large 
+
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingBottom: 30,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.neutral[100],
+    ...SHADOWS.large
   },
-  wishAction: { 
-    width: 52, 
-    height: 52, 
-    borderRadius: RADIUS.lg, 
-    backgroundColor: COLORS.neutral[100], 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  wishAction: {
+    width: 52,
+    height: 52,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.neutral[100],
+    justifyContent: 'center',
+    alignItems: 'center'
   },
 });

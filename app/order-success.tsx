@@ -1,17 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { ZoomIn, FadeInDown, FadeIn } from 'react-native-reanimated';
-import { Check, Download, Share2, ShoppingBag, Calendar, MapPin, CreditCard } from 'lucide-react-native';
+import { Check, Share2, ShoppingBag, Calendar, MapPin, CreditCard } from 'lucide-react-native';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
-import { useToast } from '@/store/toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function OrderSuccessScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { show } = useToast();
   const [bookingId] = useState('STH' + Date.now().toString().slice(-8));
 
   const handleShare = async () => {
@@ -45,10 +43,10 @@ export default function OrderSuccessScreen() {
             <Text style={styles.cardLabel}>Order Number</Text>
             <Text style={styles.cardValue}>#{Math.floor(Math.random() * 100000)}</Text>
           </View>
-          <View style={styles.cardRow}>
+          {/* <View style={styles.cardRow}>
             <Calendar color={COLORS.neutral[400]} size={16} />
             <Text style={styles.cardValue}>Event on 15 Jul 2025, 6:00 PM</Text>
-          </View>
+          </View> */}
           <View style={styles.cardRow}>
             <MapPin color={COLORS.neutral[400]} size={16} />
             <Text style={styles.cardValue} numberOfLines={1}>Grand Palace, Bengaluru</Text>
@@ -76,10 +74,6 @@ export default function OrderSuccessScreen() {
 
         {/* Actions */}
         <Animated.View entering={FadeInDown.delay(1000)} style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => show('Invoice downloaded')}>
-            <Download color={COLORS.primary[600]} size={20} />
-            <Text style={styles.actionText}>Download Invoice</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
             <Share2 color={COLORS.primary[600]} size={20} />
             <Text style={styles.actionText}>Share Booking</Text>

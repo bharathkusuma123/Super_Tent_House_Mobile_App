@@ -2854,7 +2854,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        throw new Error(`Server returned invalid response. Status: ${response.status}`);
+        const contentType = response.headers.get('content-type') || 'unknown';
+        console.error('❌ Login API returned a non-JSON response:', {
+          status: response.status,
+          contentType,
+        });
+        throw new Error(
+          response.ok
+            ? 'Login service returned an invalid response. Please try again later.'
+            : `Login service is unavailable (${response.status}). Please try again later.`
+        );
       }
 
       if (response.status === 403 && data.requiresOTP) {
@@ -2881,8 +2890,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       dispatch({ type: 'SET_AUTH', payload: { user, token } });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Login error:', error);
+      if (error instanceof TypeError) {
+        throw new Error('Unable to reach the login service. Check your internet connection and try again.');
+      }
       throw error;
     }
   }, [mapUserData]);

@@ -1711,10 +1711,17 @@ export default function OrderDetailsScreen() {
     return statusConfig[status] || statusConfig.pending;
   };
 
+  const isInvoiceAvailable = order?.status?.toLowerCase() === 'completed';
+
   // ─── Download Invoice ──────────────────────────────────────────────────────
   const handleDownloadInvoice = useCallback(async () => {
     if (!order) {
       show('Order not found', 'error');
+      return;
+    }
+
+    if (order.status?.toLowerCase() !== 'completed') {
+      show('Invoice is available only after the order is completed', 'info');
       return;
     }
 
@@ -1756,6 +1763,7 @@ export default function OrderDetailsScreen() {
 
       const invoiceData: InvoiceData = {
         orderId: order.id,
+        orderSource: 'customer',
         orderNumber: order.order_number || String(order.id),
         customerName: order.customer_name || 'N/A',
         customerEmail: order.customer_email || 'N/A',
@@ -1814,12 +1822,18 @@ export default function OrderDetailsScreen() {
       return;
     }
 
+    if (order.status?.toLowerCase() !== 'completed') {
+      show('Invoice is available only after the order is completed', 'info');
+      return;
+    }
+
     try {
       setDownloading(true);
       show('Generating invoice for sharing...', 'info');
 
       const invoiceData: InvoiceData = {
         orderId: order.id,
+        orderSource: 'customer',
         orderNumber: order.order_number || String(order.id),
         customerName: order.customer_name || 'N/A',
         customerEmail: order.customer_email || 'N/A',
@@ -1998,7 +2012,7 @@ export default function OrderDetailsScreen() {
       </View>
 
       {/* Event Details */}
-      <View style={styles.section}>
+      {/* <View style={styles.section}>
         <Text style={styles.sectionTitle}>Event Details</Text>
         <View style={styles.detailCard}>
           <View style={styles.detailRow}>
@@ -2039,7 +2053,7 @@ export default function OrderDetailsScreen() {
             </View>
           )}
         </View>
-      </View>
+      </View> */}
 
       {/* Delivery Address */}
       <View style={styles.section}>
@@ -2101,10 +2115,7 @@ export default function OrderDetailsScreen() {
             <Text style={styles.summaryLabel}>GST (18%)</Text>
             <Text style={styles.summaryValue}>₹{order.gst?.toLocaleString('en-IN') || '0'}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.summaryLabel}>Payment Method</Text>
-            <Text style={styles.summaryValue}>{order.payment_method?.toUpperCase() || 'N/A'}</Text>
-          </View>
+          
           <View style={styles.detailRow}>
             <Text style={styles.summaryLabel}>Payment Status</Text>
             <Text style={[styles.summaryValue, { 
@@ -2121,32 +2132,34 @@ export default function OrderDetailsScreen() {
         </View>
       </View>
 
-      {/* Actions */}
-      <View style={styles.actions}>
-        <TouchableOpacity 
-          style={[styles.actionBtn, downloading && styles.actionBtnDisabled]} 
-          onPress={handleDownloadInvoice}
-          disabled={downloading}
-        >
-          {downloading ? (
-            <ActivityIndicator size="small" color={COLORS.primary[600]} />
-          ) : (
-            <>
-              <FileText color={COLORS.primary[600]} size={20} />
-              <Text style={styles.actionText}>Download Invoice</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.actionBtn, downloading && styles.actionBtnDisabled]} 
-          onPress={handleShareInvoice}
-          disabled={downloading}
-        >
-          <Share2 color={COLORS.primary[600]} size={20} />
-          <Text style={styles.actionText}>Share Invoice</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Invoice actions are available only after an order is completed. */}
+      {isInvoiceAvailable && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, downloading && styles.actionBtnDisabled]}
+            onPress={handleDownloadInvoice}
+            disabled={downloading}
+          >
+            {downloading ? (
+              <ActivityIndicator size="small" color={COLORS.primary[600]} />
+            ) : (
+              <>
+                <FileText color={COLORS.primary[600]} size={20} />
+                <Text style={styles.actionText}>Download Invoice</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, downloading && styles.actionBtnDisabled]}
+            onPress={handleShareInvoice}
+            disabled={downloading}
+          >
+            <Share2 color={COLORS.primary[600]} size={20} />
+            <Text style={styles.actionText}>Share Invoice</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.actionRow}>
         <TouchableOpacity 

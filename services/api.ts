@@ -8635,12 +8635,11 @@ import {
   heroBanners as mockHeroBanners 
 } from '@/mock/data';
 import { Product, Category, Package, AddOn, Coupon, Order, AppNotification, Address } from '@/types';
+import { API_BASE_URL } from '@/constants/api';
 
 // ─── Configuration ──────────────────────────────────────────────
 const USE_REAL_API = true;
-// export const API_BASE_URL = 'https://motivated-test-collections-unsigned.trycloudflare.com/api';
-
-export const API_BASE_URL = 'https://tenthouse.iiiqbets.com:5000/api';
+export { API_BASE_URL };
 
 // ─── Axios Instance ─────────────────────────────────────────────
 const apiClient = axios.create({
